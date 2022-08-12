@@ -1,6 +1,8 @@
 #ifndef __JJ_ICONV_H__
 #define __JJ_ICONV_H__
 
+#include "utils.h"
+
 #define ICONV_UTF8              "UTF-8"
 #define ICONV_CP936             "CP936"
 #define ICONV_WCHAR             "UTF-16LE"

@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
-#include <iconv.h>
+#include "iconv.h"
 
 int iconv_locale_ok = 0;
 
@@ -14,19 +15,20 @@ char locale_cp[64] = { 0 };
 int iconv_winnt_locale_init(void)
 {
         iconv_t t;
+        int err = 0;
 
         snprintf(locale_cp, sizeof(locale_cp), "CP%u", GetACP());
 
         t = iconv_open(ICONV_UTF8, locale_cp);
         if (t == (iconv_t)-1) {
-                pr_err("iconv does not support %s->%s\n", locale_cp, ICONV_UTF8);
+                err = -ENOTSUP;
                 iconv_locale_ok = 0;
         } else {
                 iconv_locale_ok = 1;
                 iconv_close(t);
         }
 
-        return 0;
+        return err;
 }
 
 int iconv_locale_to_utf8(char *in, size_t in_bytes, char *out, size_t out_bytes)
@@ -70,9 +72,7 @@ int iconv_convert(void *in, size_t in_bytes, const char *in_encode, const char *
         cd = iconv_open(out_encode, in_encode);
         if (cd == (iconv_t)-1) {
                 if (errno == EINVAL)
-                        pr_err("iconv does not support %s->%s\n", in_encode, out_encode);
-                else
-                        pr_err("iconv_open() failed, err = %d\n", errno);
+                        return -ENOTSUP;
 
                 return -errno;
         }
@@ -80,7 +80,7 @@ int iconv_convert(void *in, size_t in_bytes, const char *in_encode, const char *
         iconv(cd, (char **)&in, &in_bytes, (char **)&out, &out_bytes);
 
         if (iconv_close(cd) != 0)
-                pr_err("iconv_close() failed\n");
+                return -EFAULT;
 
         return 0;
 }
