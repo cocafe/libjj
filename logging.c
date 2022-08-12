@@ -173,6 +173,50 @@ out:
         return ret;
 }
 
+int mb_vwprintf(const wchar_t *title, uint32_t flags, const wchar_t *fmt, va_list arg)
+{
+        va_list arg2;
+        wchar_t cbuf;
+        wchar_t *sbuf;
+        int len, ret;
+
+        va_copy(arg2, arg);
+        len = vsnwprintf(&cbuf, sizeof(cbuf), fmt, arg2);
+        va_end(arg2);
+
+        if (len < 0)
+                return len;
+
+        sbuf = calloc(len + 2, sizeof(wchar_t));
+        if (!sbuf)
+                return -ENOMEM;
+
+        ret = vsnwprintf(sbuf, len + 1, fmt, arg);
+        if (ret < 0) {
+                MessageBoxW(NULL, NULL, L"vsnwprintf() failed", MB_OK);
+                goto out;
+        }
+
+        MessageBoxW(NULL, sbuf, title, flags);
+
+out:
+        free(sbuf);
+
+        return ret;
+}
+
+int mb_wprintf(const wchar_t *title, uint32_t flags, const wchar_t *fmt, ...)
+{
+        va_list ap;
+        int ret;
+
+        va_start(ap, fmt);
+        ret = mb_vwprintf(title, flags, fmt, ap);
+        va_end(ap);
+
+        return ret;
+}
+
 int mb_printf(const char *title, uint32_t flags, const char *fmt, ...)
 {
         va_list ap;
