@@ -1,6 +1,8 @@
 #ifndef __JJ_UUID_H__
 #define __JJ_UUID_H__
 
+#include <stdint.h>
+
 #include <uuid/uuid.h>
 
 struct uuid {
