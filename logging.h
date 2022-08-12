@@ -180,8 +180,8 @@ int mb_printf(const char *title, unsigned flags, const char *fmt, ...);
 #define zlog_bg_color(cat, lvl, fg, bg, msg, fmt...)    \
         do {                                            \
                 zlog_##lvl(cat,                         \
-                           "\033[" STRINGIFY(fg) ";"    \
-                           STRINGIFY(bg) "m"            \
+                           "\033[" __stringify(fg) ";"  \
+                           __stringify(bg) "m"          \
                            msg                          \
                            "\033[0m", ##fmt);           \
         } while(0)
@@ -189,7 +189,7 @@ int mb_printf(const char *title, unsigned flags, const char *fmt, ...);
 #define zlog_color(cat, lvl, fg, msg, fmt...)           \
         do {                                            \
                 zlog_##lvl(cat, "\033[0;"               \
-                           STRINGIFY(fg) "m"            \
+                           __stringify(fg) "m"          \
                            msg                          \
                            "\033[0m", ##fmt);           \
         } while(0)
@@ -239,8 +239,8 @@ int mb_printf(const char *title, unsigned flags, const char *fmt, ...);
                 }                                       \
                                                         \
                 fprintf(fp,                             \
-                        "\033[" STRINGIFY(fg) ";"       \
-                        STRINGIFY(bg) "m"               \
+                        "\033[" __stringify(fg) ";"     \
+                        __stringify(bg) "m"             \
                         msg                             \
                         "\033[0m", ##fmt);              \
                 if (cr)                                 \
@@ -260,7 +260,7 @@ int mb_printf(const char *title, unsigned flags, const char *fmt, ...);
                                                         \
                 fprintf(fp,                             \
                         "\033[0;"                       \
-                        STRINGIFY(color) "m"            \
+                        __stringify(color) "m"          \
                         msg                             \
                         "\033[0m", ##fmt);              \
         } while(0)

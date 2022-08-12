@@ -7,6 +7,7 @@
 #include <iconv.h>
 #endif // __WINNT__
 
+#include "iconv.h"
 #include "logging.h"
 
 uint32_t g_logprint_level = LOG_LEVEL_DEFAULT;

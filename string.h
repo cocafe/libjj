@@ -6,10 +6,6 @@
 #include <wchar.h>
 #include <string.h>
 
-#define __STRINGIFY(mm)         #mm
-// do not put () on @m which should be a macro
-#define STRINGIFY(m)            __STRINGIFY(m)
-
 /* Indirect stringification.  Doing two levels allows the parameter to be a
  * macro itself.  For example, compile with -DFOO=bar, __stringify(FOO)
  * converts to "bar".
