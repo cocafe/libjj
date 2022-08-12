@@ -92,7 +92,7 @@ int console_title_set(wchar_t *title)
         if (!g_console_alloc || !g_console_hwnd)
                 return -ENOENT;
 
-        if (SetWindowText(g_console_hwnd, title) == 0) {
+        if (SetWindowTextW(g_console_hwnd, title) == 0) {
                 pr_err("SetWindowText(), err=%lu\n", GetLastError());
                 return -EFAULT;
         }
