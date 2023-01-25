@@ -167,6 +167,8 @@ int logging_exit(void);
 #define MB_FUNC_ERR()           MB_MSG_ERR("%s:%d %s() failed", __FILE__, __LINE__, __func__)
 
 int mb_printf(const char *title, unsigned flags, const char *fmt, ...);
+
+#define pr_getlasterr(func_name) pr_err("%s(): failed, err = 0x%08lx\n", func_name, GetLastError())
 #endif // __WINNT__
 
 /*
