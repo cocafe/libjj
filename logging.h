@@ -8,7 +8,7 @@
 #include "bits.h"
 #include "string.h"
 
-#define LOG_ALWAYS_FLUSH
+// #define LOG_ALWAYS_FLUSH
 #define LOG_COLOR_ENABLED
 #define LOG_LEVEL_COLORED
 #define LOG_ERR_STREAM          stdout
