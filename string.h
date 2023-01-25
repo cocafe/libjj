@@ -23,7 +23,9 @@ int vprintf_resize(char **buf, size_t *pos, size_t *len, const char *fmt, va_lis
 int snprintf_resize(char **buf, size_t *pos, size_t *len, const char *fmt, ...);
 
 int __str_cat(char *dest, size_t dest_sz, char *src);
-char *__str_ncpy(char *dest, const char *src, size_t dest_sz);
+char *__str_ncpy(char *dest, const char *src, size_t len);
+// @len: wide characters count
+wchar_t *__wstr_ncpy(wchar_t *dest, const wchar_t *src, size_t len);
 
 int is_str_equal(char *a, char *b, int caseless);
 int is_wstr_equal(wchar_t *a, wchar_t *b);

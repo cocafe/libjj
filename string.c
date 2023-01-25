@@ -197,12 +197,22 @@ int __str_cat(char *dest, size_t dest_sz, char *src)
         return 0;
 }
 
-char *__str_ncpy(char *dest, const char *src, size_t dest_sz)
+char *__str_ncpy(char *dest, const char *src, size_t len)
 {
         char *ret;
 
-        ret = strncpy(dest, src, dest_sz - 1);
-        dest[dest_sz - 1] = '\0';
+        ret = strncpy(dest, src, len - 1);
+        dest[len - 1] = '\0';
+
+        return ret;
+}
+
+wchar_t *__wstr_ncpy(wchar_t *dest, const wchar_t *src, size_t len)
+{
+        wchar_t *ret;
+
+        ret = wcsncpy(dest, src, len);
+        dest[len - 1] = L'\0';
 
         return ret;
 }
