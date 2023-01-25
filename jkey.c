@@ -5,12 +5,9 @@
 #include <math.h>
 #include <wchar.h>
 
-#ifdef HAVE_UUID
-#include "uuid.h"
-#endif
-
 #include "list.h"
 #include "utils.h"
+#include "uuid.h"
 #include "jkey.h"
 #include "malloc.h"
 #include "iconv.h"
@@ -27,9 +24,7 @@ static uint32_t jkey_to_cjson_type[] = {
         [JKEY_TYPE_STRREF]       = cJSON_String,
         [JKEY_TYPE_STRBUF]       = cJSON_String,
         [JKEY_TYPE_STRPTR]       = cJSON_String,
-#ifdef HAVE_UUID
         [JKEY_TYPE_UUID]         = cJSON_String,
-#endif
         [JKEY_TYPE_BOOL]         = cJSON_Boolean,
         [JKEY_TYPE_INT]          = cJSON_Number,
         [JKEY_TYPE_UINT]         = cJSON_Number,
@@ -47,9 +42,7 @@ char *jkey_type_strs[] = {
         [JKEY_TYPE_STRREF]       = "string_ref",
         [JKEY_TYPE_STRBUF]       = "string_buf",
         [JKEY_TYPE_STRPTR]       = "string_ptr",
-#ifdef HAVE_UUID
         [JKEY_TYPE_UUID]         = "uuid",
-#endif
         [JKEY_TYPE_BOOL]         = "bool",
         [JKEY_TYPE_INT]          = "int",
         [JKEY_TYPE_UINT]         = "uint",
@@ -559,11 +552,10 @@ void *jbuf_hex_s64_add(jbuf_t *b, char *key, int64_t *ref)
         return cookie;
 }
 
-#ifdef HAVE_UUID
-void *jbuf_uuid_add(jbuf_t *b, char *key, uuid_t *ref)
+void *jbuf_uuid_str_add(jbuf_t *b, char *key, char *ref)
 {
         jkey_t *k;
-        void *cookie = jbuf_strbuf_add(b, key, (void *)ref, sizeof(uuid_t));
+        void *cookie = jbuf_strbuf_add(b, key, ref, sizeof(struct uuid));
         if (!cookie)
                 return NULL;
 
@@ -572,7 +564,6 @@ void *jbuf_uuid_add(jbuf_t *b, char *key, uuid_t *ref)
 
         return cookie;
 }
-#endif
 
 void *jbuf_offset_strbuf_add(jbuf_t *b, char *key, ssize_t offset, size_t len)
 {
@@ -819,19 +810,21 @@ static int jkey_string_write(jkey_t *jkey, cJSON *node)
 
                 break;
 
-#ifdef HAVE_UUID
         case JKEY_TYPE_UUID:
                 if (jkey->data.sz == 0) {
                         pr_err("invalid data size\n");
                         return -EINVAL;
                 }
 
+#ifdef HAVE_UUID
                 if ((err = uuid_parse(json_str, jkey->data.ref))) {
                         pr_err("uuid_parse() failed\n");
                 }
+#else
+                pr_err("UUID support is not enabled\n");
+#endif
 
                 break;
-#endif
 
         default:
                 pr_err("invalid jkey type: %d, key [%s]\n", jkey->type, jkey->key);
@@ -1685,15 +1678,17 @@ int jbuf_traverse_print_post(jkey_t *jkey, int has_next, int depth, int argc, va
 
                 break;
 
-#ifdef HAVE_UUID
         case JKEY_TYPE_UUID:
         {
+#ifdef HAVE_UUID
                 struct uuid *u = jkey->data.ref;
                 printf_wrap(buf, buf_pos, buf_len, "\""UUID_FMT"\"", UUID_PTR_ARG(u));
+#else
+                printf_wrap(buf, buf_pos, buf_len, "UUID not enabled");
+#endif
 
                 break;
         }
-#endif
 
         default:
                 pr_err("unknown data type: %u\n", jkey->type);

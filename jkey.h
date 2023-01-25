@@ -8,9 +8,7 @@
 #include "list.h"
 #include "cJSON.h"
 
-#ifdef HAVE_UUID
 #include "uuid.h"
-#endif
 
 #define cJSON_Boolean                   (cJSON_False | cJSON_True)
 #define cJSON_Compound                  (cJSON_Object | cJSON_Array)
@@ -33,9 +31,7 @@ enum json_key_types {
         JKEY_TYPE_STRREF,
         JKEY_TYPE_STRBUF,
         JKEY_TYPE_STRPTR,
-#ifdef HAVE_UUID
         JKEY_TYPE_UUID,
-#endif
         JKEY_TYPE_BOOL,
         JKEY_TYPE_INT,
         JKEY_TYPE_UINT,
@@ -157,9 +153,7 @@ void *jbuf_hex_u64_add(jbuf_t *b, char *key, uint64_t *ref);
 void *jbuf_hex_s32_add(jbuf_t *b, char *key, int32_t *ref);
 void *jbuf_hex_s64_add(jbuf_t *b, char *key, int64_t *ref);
 
-#ifdef HAVE_UUID
-void *jbuf_uuid_add(jbuf_t *b, char *key, uuid_t *ref);
-#endif
+void *jbuf_uuid_str_add(jbuf_t *b, char *key, char *ref);
 
 #define jbuf_offset_add(buf, type, key, offset)                         \
         do {                                                            \
