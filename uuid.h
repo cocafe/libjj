@@ -3,7 +3,12 @@
 
 #include <stdint.h>
 
+#include "endian_wrap.h"
+
+// mingw uses msvc GUID definitions
+#if !defined(__MINGW64__) && !defined(__MINGW32__)
 #include <uuid/uuid.h>
+#endif
 
 struct uuid {
         uint32_t time_low;              // be
@@ -19,9 +24,10 @@ struct uuid {
                         x.clock_seq_hi_and_resvd, x.clock_seq_low, \
                         x.node[0], x.node[1], x.node[2], \
                         x.node[3], x.node[4], x.node[5]
-#define UUID_PTR_ARG(x) be32toh(x->time_low), be16toh(x->time_mid), be16toh(x->time_hi_and_ver), \
+#define UUID_PTR(x)     be32toh(x->time_low), be16toh(x->time_mid), be16toh(x->time_hi_and_ver), \
                         x->clock_seq_hi_and_resvd, x->clock_seq_low, \
                         x->node[0], x->node[1], x->node[2], \
                         x->node[3], x->node[4], x->node[5]
+#define UUID_ANY_PTR(x) UUID_PTR((struct uuid *) { (void *)(x) })
 
 #endif // __JJ_UUID_H__

@@ -1,11 +1,7 @@
 #ifndef __JJ_BITS_H__
 #define __JJ_BITS_H__
 
-#if defined(__WINNT__) && defined(__MINGW32__)
-#include "endian_mingw.h"
-#else
-#include <endian.h>
-#endif // __WINNT__ && __MINGW32__
+#include "endian_wrap.h"
 
 #ifdef __GNUC__
 #ifndef BITS_PER_LONG
