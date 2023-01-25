@@ -24,6 +24,7 @@ set(COMMON_SRC
     string.h
     utils.h
     uuid.h
+    endian_wrap.h
     )
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
