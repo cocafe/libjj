@@ -1,12 +1,9 @@
 #ifndef __JJ_CONFIG_OPTS_H__
 #define __JJ_CONFIG_OPTS_H__
 
+#include <wchar.h>
 #include <stdarg.h>
 #include <getopt.h>
-
-#ifdef HAVE_ICONV
-#include "iconv.h"
-#endif
 
 // TODO: specify same param multiple times to create multiple things?
 
@@ -203,8 +200,6 @@ int optstr_to_int(void *data, char *optarg, size_t vargc, ...);
 
 int longopts_parse(int argc, char *argv[], optdesc_t **opt_list);
 
-#ifdef HAVE_ICONV
 int wchar_longopts_parse(int argc, wchar_t *wargv[], optdesc_t **opt_list);
-#endif
 
 #endif //__JJ_CONFIG_OPTS_H__

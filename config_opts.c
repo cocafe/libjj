@@ -635,4 +635,13 @@ int wchar_longopts_parse(int argc, wchar_t *wargv[], optdesc_t **opt_list)
 
         return ret;
 }
+#else
+int wchar_longopts_parse(int argc, wchar_t *wargv[], optdesc_t **opt_list)
+{
+        UNUSED_PARAM(argc);
+        UNUSED_PARAM(wargv);
+        UNUSED_PARAM(opt_list);
+
+        return -EINVAL;
+}
 #endif

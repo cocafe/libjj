@@ -56,8 +56,10 @@ endif()
 
 if ("${JJCOM_HAVE_ICONV}" STREQUAL "1")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_ICONV")
-        set(ICONV_SRC iconv.c iconv.h)
+        set(ICONV_SRC iconv.h iconv_wrap.c iconv.c)
         set(ICONV_LIB iconv)
+else()
+        set(ICONV_SRC iconv.h iconv_wrap.c)
 endif()
 
 if ("${JJCOM_HAVE_MATH}" STREQUAL "1")
