@@ -164,29 +164,43 @@ void *jbuf_uuid_str_add(jbuf_t *b, char *key, char *ref);
                 jkey_ref_parent_set(buf, cookie, offset);               \
         } while (0)
 
-#define jbuf_offset_obj_open(buf, cookie, key, offset)                  \
-        do {                                                            \
+#define jbuf_offset_obj_open(buf, key, offset)                         \
+        ({                                                              \
                 void *t = jbuf_obj_open(buf, key);                      \
-                if (!t) {                                               \
-                        cookie = NULL;                                  \
-                        break;                                          \
+                void *cookie = NULL;                                    \
+                if (t) {                                                \
+                        jkey_ref_parent_set(buf, t, offset);           \
+                        cookie = t;                                     \
                 }                                                       \
                                                                         \
-                jkey_ref_parent_set(buf, t, offset);                    \
-                cookie = t;                                             \
-        } while (0)
+                cookie;                                                 \
+        })
 
-#define jbuf_offset_objptr_open(buf, cookie, key, sz, offset)           \
+#define jbuf_offset_objptr_open(buf, key, sz, offset)                  \
+        ({                                                              \
+                void *t = jbuf_objptr_open(buf, key, NULL, sz);        \
+                void *cookie = NULL;                                    \
+                if (t) {                                                \
+                        jkey_base_ref_parent_set(buf, t, offset);      \
+                        cookie = t;                                     \
+                }                                                       \
+                                                                        \
+                cookie;                                                 \
+        })
+
+/*
+#define jbuf_offset_objptr_open(buf, cookie, key, sz, offset)          \
         do {                                                            \
-                void *t = jbuf_objptr_open(buf, key, NULL, sz);         \
+                void *t = jbuf_objptr_open(buf, key, NULL, sz);        \
                 if (!t) {                                               \
                         cookie = NULL;                                  \
                         break;                                          \
                 }                                                       \
                                                                         \
-                jkey_base_ref_parent_set(buf, t, offset);               \
+                jkey_base_ref_parent_set(buf, t, offset);              \
                 cookie = t;                                             \
         } while (0)
+*/
 
 #define jbuf_array_data_key(buf, type) jbuf_offset_add(buf, type, NULL, 0)
 #define jbuf_array_obj_data_key(buf, cookie) jbuf_offset_obj_open(buf, cookie, NULL, 0)
