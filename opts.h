@@ -92,18 +92,8 @@ const opt_desc_t opt_##sopt __ALIGNED(sizeof(void *)) __SECTION("section_opt_des
                 __sopt_entry(sopt, required_argument, ref, ref_sz, OPT_DATA_UINT, NULL, optval, help)
 
 
-#define _sopt_noarg(sopt, ref, ref_sz, set, help) \
+#define sopt_noarg(sopt, ref, ref_sz, set, help) \
                 __sopt_entry(sopt, no_argument, ref, ref_sz, OPT_DATA_GENERIC, set, NULL, help)
-
-#define sopt_noarg(sopt, help) \
-                __sopt_entry(sopt, no_argument, NULL, 0, OPT_DATA_GENERIC, NULL, NULL, help)
-
-#define sopt_int_noarg          _sopt_noarg
-#define sopt_uint_noarg         _sopt_noarg
-#define sopt_flt_noarg          _sopt_noarg
-#define sopt_dbl_noarg          _sopt_noarg
-#define sopt_strbuf_noarg       _sopt_noarg
-#define sopt_strptr_noarg       _sopt_noarg
 
 
 #define ___lsopt_entry(sopt, lopt, need_arg, ref, ref_sz, ref_type, int_base, set, optval, help)        \
@@ -141,18 +131,8 @@ const opt_desc_t opt_##lopt __ALIGNED(sizeof(void *)) __SECTION("section_opt_des
                 __lsopt_entry(sopt, lopt, required_argument, ref, ref_sz, OPT_DATA_UINT, NULL, optval, help)
 
 
-#define _lsopt_noarg(sopt, lopt, ref, ref_sz, set, help) \
+#define lsopt_noarg(sopt, lopt, ref, ref_sz, set, help) \
                 __lsopt_entry(sopt, lopt, no_argument, ref, ref_sz, OPT_DATA_GENERIC, set, NULL, help)
-
-#define lsopt_noarg(sopt, lopt, help) \
-                __lsopt_entry(sopt, lopt, no_argument, NULL, 0, OPT_DATA_GENERIC, NULL, NULL, help)
-
-#define lsopt_int_noarg         _lsopt_noarg
-#define lsopt_uint_noarg        _lsopt_noarg
-#define lsopt_flt_noarg         _lsopt_noarg
-#define lsopt_dbl_noarg         _lsopt_noarg
-#define lsopt_strbuf_noarg      _lsopt_noarg
-#define lsopt_strptr_noarg      _lsopt_noarg
 
 
 #define lopt_int(lopt, ref, ref_sz, help) \
@@ -180,18 +160,8 @@ const opt_desc_t opt_##lopt __ALIGNED(sizeof(void *)) __SECTION("section_opt_des
                 lsopt_optval(\0, lopt, ref, ref_sz, optval, help)
 
 
-#define _lopt_noarg(lopt, ref, ref_sz, set, help) \
-                _lsopt_noarg(\0, lopt, ref, ref_sz, set, help)
-
-#define lopt_noarg(lopt, help) \
-                lsopt_noarg(\0, lopt, help)
-
-#define lopt_int_noarg          _lopt_noarg
-#define lopt_uint_noarg         _lopt_noarg
-#define lopt_flt_noarg          _lopt_noarg
-#define lopt_dbl_noarg          _lopt_noarg
-#define lopt_strbuf_noarg       _lopt_noarg
-#define lopt_strptr_noarg       _lopt_noarg
+#define lopt_noarg(lopt, ref, ref_sz, set, help) \
+                lsopt_noarg(\0, lopt, ref, ref_sz, set, help)
 
 int longopts_parse(int argc, char *argv[], void nonopt_cb(char *arg));
 int wchar_longopts_parse(int argc, wchar_t *wargv[], void nonopt_cb(char *arg));
