@@ -594,7 +594,7 @@ int longopts_parse(int argc, char *argv[], void nonopt_cb(char *arg))
 
                 if (c == 'h' || (optidx >= 0 && is_str_equal((char *)lopts[optidx].name, "help", 0))) {
 #if defined __WINNT__ && defined SUBSYS_WINDOW
-                        if (g_console_is_allocated) {
+                        if (is_console_allocated() && !is_console_hid()) {
                                 longopts_help();
                         } else {
                                 longopts_help_messagebox();

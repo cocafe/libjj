@@ -139,12 +139,16 @@ extern uint32_t g_logprint_colored;
 
 extern uint32_t g_console_alloc;
 extern uint32_t g_console_show;
-extern uint32_t g_console_is_hide;
 extern HWND g_console_wnd;
 
+int is_console_hid(void);
+int is_console_allocated(void);
 void console_hide(void);
 void console_show(int set_focus);
 int console_title_set(wchar_t *title);
+int __console_init(void);
+int console_init(void);
+int console_deinit(void);
 #endif
 
 int is_logging_colored(void);

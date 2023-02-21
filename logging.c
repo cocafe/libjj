@@ -9,16 +9,23 @@
 
 #include "iconv.h"
 #include "logging.h"
+#include "opts.h"
 
 uint32_t g_logprint_level = LOG_LEVEL_DEFAULT;
 uint32_t g_logprint_colored = 1;
 
 #ifdef __WINNT__
 
-uint32_t g_console_alloc = 1;
+uint32_t g_console_alloc = 0;
 uint32_t g_console_show = 1;
-uint32_t g_console_is_hide;
 HWND g_console_hwnd = NULL;
+static uint32_t g_console_is_hide;
+static uint32_t g_console_is_allocated;
+
+#ifdef SUBSYS_WINDOW
+lopt_noarg(alloc_console, &g_console_alloc, sizeof(g_console_alloc), &(uint32_t){ 1 }, "Alloc console window");
+lopt_noarg(hide_console, &g_console_show, sizeof(g_console_show), &(uint32_t){ 0 }, "Hide console window on startup");
+#endif
 
 void console_show(int set_focus)
 {
@@ -43,6 +50,16 @@ void console_hide(void)
         g_console_is_hide = 1;
 }
 
+int is_console_hid(void)
+{
+        return g_console_is_hide ? 1 : 0;
+}
+
+int is_console_allocated(void)
+{
+        return g_console_is_allocated ? 1 : 0;
+}
+
 static void console_stdio_redirect(void)
 {
         HANDLE ConsoleOutput = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -62,12 +79,10 @@ static void console_stdio_redirect(void)
         freopen_s(&CErrorHandle, "CONOUT$", "w", stderr);
 }
 
-int console_init(void)
+int __console_init(void)
 {
-        if (!g_console_alloc) {
-                g_console_is_hide = 1;
-                return 0;
-        }
+        if (g_console_is_allocated)
+                return -EALREADY;
 
         if (AllocConsole() == 0) {
                 pr_err("AllocConsole(), err = %lu\n", GetLastError());
@@ -83,13 +98,30 @@ int console_init(void)
         }
 
         g_console_is_hide = 0;
+        g_console_is_allocated = 1;
+
+        if (!g_console_show)
+                console_hide();
+
+        return 0;
+}
+
+int console_init(void)
+{
+        int err;
+
+        if (!g_console_alloc)
+                return 0;
+
+        if ((err = __console_init()))
+                return err;
 
         return 0;
 }
 
 int console_title_set(wchar_t *title)
 {
-        if (!g_console_alloc || !g_console_hwnd)
+        if (!g_console_is_allocated || !g_console_hwnd)
                 return -ENOENT;
 
         if (SetWindowTextW(g_console_hwnd, title) == 0) {
@@ -102,10 +134,15 @@ int console_title_set(wchar_t *title)
 
 int console_deinit(void)
 {
+        if (!is_console_allocated())
+                return -ENOENT;
+
         if (FreeConsole() == 0) {
                 pr_err("FreeConsole(), err = %lu\n", GetLastError());
-                return -1;
+                return -EFAULT;
         }
+
+        g_console_is_allocated = 0;
 
         return 0;
 }
@@ -243,20 +280,25 @@ void logging_colored_set(int enabled)
 
 int logging_init(void)
 {
+        int err = 0;
+
 #ifdef __WINNT__
-        if (console_init())
-                return -1;
+        if ((err = console_init()))
+                return err;
+
 #endif
 
-        return 0;
+        return err;
 }
 
 int logging_exit(void)
 {
+        int err = 0;
+
 #ifdef __WINNT__
-        if (g_console_alloc && console_deinit())
-                return -1;
+        if (console_deinit())
+                return err;
 #endif
 
-        return 0;
+        return err;
 }
