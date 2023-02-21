@@ -459,7 +459,8 @@ print_optval:
         free(line);
         free(buf);
 }
-#else // TODO: check console
+#endif
+
 static void longopts_help(void)
 {
         const opt_desc_t *i;
@@ -560,7 +561,6 @@ print_optval:
                         optval_help_print(i, buf_len);
         }
 }
-#endif
 
 int longopts_parse(int argc, char *argv[], void nonopt_cb(char *arg))
 {
@@ -594,7 +594,12 @@ int longopts_parse(int argc, char *argv[], void nonopt_cb(char *arg))
 
                 if (c == 'h' || (optidx >= 0 && is_str_equal((char *)lopts[optidx].name, "help", 0))) {
 #if defined __WINNT__ && defined SUBSYS_WINDOW
-                        longopts_help_messagebox();
+                        if (g_console_is_allocated) {
+                                longopts_help();
+                        } else {
+                                longopts_help_messagebox();
+                        }
+
 #else
                         longopts_help();
 #endif
