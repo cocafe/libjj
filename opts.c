@@ -682,3 +682,5 @@ int wchar_longopts_parse(int argc, wchar_t *wargv[], void nonopt_cb(char *arg))
         return -EINVAL;
 }
 #endif
+
+lsopt_noarg(h, help, NULL, 0, NULL, "This help message");
