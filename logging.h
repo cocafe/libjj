@@ -147,6 +147,9 @@ void console_show(int set_focus);
 int console_title_set(wchar_t *title);
 #endif
 
+int is_logging_colored(void);
+void logging_colored_set(int enabled);
+
 int logging_init(void);
 int logging_exit(void);
 

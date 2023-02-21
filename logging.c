@@ -11,7 +11,7 @@
 #include "logging.h"
 
 uint32_t g_logprint_level = LOG_LEVEL_DEFAULT;
-uint32_t g_logprint_colored = 0;
+uint32_t g_logprint_colored = 1;
 
 #ifdef __WINNT__
 
@@ -230,6 +230,16 @@ int mb_printf(const char *title, uint32_t flags, const char *fmt, ...)
 }
 
 #endif // __WINNT__
+
+int is_logging_colored(void)
+{
+        return g_logprint_colored ? 1 : 0;
+}
+
+void logging_colored_set(int enabled)
+{
+        g_logprint_colored = enabled ? 1 : 0;
+}
 
 int logging_init(void)
 {
