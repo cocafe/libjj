@@ -86,7 +86,7 @@ static struct option *longopts_generate(void)
         size_t cnt = 0, c = 0;
 
         for_each_opt(i) {
-                if (i->long_opt && i->long_opt[0])
+                if (i->long_opt && !i->long_opt[0])
                         continue;
 
                 cnt++;
@@ -104,7 +104,7 @@ static struct option *longopts_generate(void)
                 struct option *o = &long_opts[c];
                 char *sopt = i->short_opt;
 
-                if (i->long_opt && i->long_opt[0])
+                if (i->long_opt && !i->long_opt[0])
                         continue;
 
                 o->name = i->long_opt;
