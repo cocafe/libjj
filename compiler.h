@@ -2,6 +2,27 @@
 #ifndef _TOOLS_LINUX_COMPILER_H_
 #define _TOOLS_LINUX_COMPILER_H_
 
+#if __GNUC__ || __clang__
+#define __UNUSED __attribute__((__unused__))
+#define __USED __attribute__((__used__))
+#define __PACKED __attribute__((packed))
+#define __ALIGNED(x) __attribute__((aligned(x)))
+#define __PRINTFLIKE(__fmt,__varargs) __attribute__((__format__ (__printf__, __fmt, __varargs)))
+#define __SCANFLIKE(__fmt,__varargs) __attribute__((__format__ (__scanf__, __fmt, __varargs)))
+#define __SECTION(x) __USED __attribute((section(x)))
+#define __PURE __attribute((pure))
+#define __CONST __attribute((const))
+#define __NO_RETURN __attribute__((noreturn))
+#define __MALLOC __attribute__((malloc))
+#define __WEAK __attribute__((weak))
+#define __GNU_INLINE __attribute__((gnu_inline))
+#define __GET_CALLER(x) __builtin_return_address(0)
+#define __GET_FRAME(x) __builtin_frame_address(0)
+#define __NAKED __attribute__((naked))
+#define __ISCONSTANT(x) __builtin_constant_p(x)
+#define __NO_INLINE __attribute((noinline))
+#endif
+
 #ifndef offsetof
 #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
 #endif

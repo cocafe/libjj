@@ -1,6 +1,8 @@
 #ifndef __JJ_UTILS_H__
 #define __JJ_UTILS_H__
 
+#include <errno.h>
+
 #include "compiler.h"
 
 #if !defined(ARRAY_SIZE)
@@ -62,6 +64,32 @@ static inline int ptr_word_write(void *data, size_t word_sz, int64_t val)
 
         case 8:
                 *(int64_t *)data = val;
+                break;
+
+        default:
+                return -EINVAL;
+        }
+
+        return 0;
+}
+
+static inline int ptr_unsigned_word_write(void *data, size_t word_sz, uint64_t val)
+{
+        switch (word_sz) {
+        case 1:
+                *(uint8_t *)data = (uint8_t)val;
+                break;
+
+        case 2:
+                *(uint16_t *)data = (uint16_t)val;
+                break;
+
+        case 4:
+                *(uint32_t *)data = (uint32_t)val;
+                break;
+
+        case 8:
+                *(uint64_t *)data = val;
                 break;
 
         default:

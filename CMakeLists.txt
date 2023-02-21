@@ -6,8 +6,8 @@ set(CMAKE_C_STANDARD 11)
 
 set(COMMON_SRC
     bits.h
-    config_opts.c
-    config_opts.h
+    opts.c
+    opts.h
     ffs.h
     file.c
     file.h
@@ -26,6 +26,10 @@ set(COMMON_SRC
     uuid.h
     endian_wrap.h
     )
+
+if (MINGW OR WINNT)
+        set(GETOPT_SRC getopt_musl.h getopt_musl.c)
+endif()
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
         message(STATUS "Build type is not defined, set default one")
@@ -76,5 +80,5 @@ if ("${JJCOM_HAVE_UUID}" STREQUAL "1")
         endif()
 endif()
 
-add_library(jjcom ${COMMON_SRC} ${JSON_SRC} ${SOCKET_SRC} ${ICONV_SRC} ${MATH_SRC} ${UUID_SRC})
+add_library(jjcom ${COMMON_SRC} ${JSON_SRC} ${SOCKET_SRC} ${ICONV_SRC} ${MATH_SRC} ${UUID_SRC} ${GETOPT_SRC})
 target_link_libraries(jjcom pthread ${ICONV_LIB} ${MATH_LIB} ${UUID_LIB} ${SOCKET_LIB})
