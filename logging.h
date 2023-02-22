@@ -408,6 +408,16 @@ int mb_printf(const char *title, unsigned flags, const char *fmt, ...);
                 __t = 1;                                                        \
         } while(0)
 
+#if defined __WINNT__
+#define pr_mb_err(msg, fmt...)                                                  \
+        do {                                                                    \
+                pr_err(msg, ##fmt);                                             \
+                mb_err(msg, ##fmt);                                             \
+        } while(0)
+#else
+#define pr_mb_err pr_err
+#endif
+
 #define pr_warn(msg, fmt...)                                                    \
         do {                                                                    \
                 if (zlog_inited)                                                \
