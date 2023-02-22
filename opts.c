@@ -325,14 +325,170 @@ static int opt_desc_handle(const opt_desc_t *d, char *arg)
 
 static __always_inline void optval_help_print(const opt_desc_t *d, size_t param_len)
 {
-        for (const opt_val_t *v = d->optvals; v && v->str_val; v++) {
-                pr_color(FG_LT_GREEN, "    %-*s\t\t%s",
+        size_t i = 0;
+        uint64_t x;
+
+        if (d->data) {
+                ptr_unsigned_word_read(d->data, d->data_sz, &x);
+        }
+
+        for (const opt_val_t *v = d->optvals; v && v->str_val; v++, i++) {
+                pr_color(FG_LT_GREEN, "    %-*s    %s",
                          (int)param_len, "", v->str_val);
 
                 if (v->desc)
                         pr_color(FG_GREEN, ": %s", v->desc);
 
+                if (d->data && i == x) {
+                        pr_color(FG_LT_BLUE, " (default)");
+                }
+
                 pr_color(FG_GREEN, "\n");
+        }
+}
+
+static __always_inline void opt_default_val_print(const opt_desc_t *d)
+{
+        uint32_t printable =
+                BIT(OPT_DATA_INT) |
+                BIT(OPT_DATA_UINT) |
+                BIT(OPT_DATA_FLOAT) |
+                BIT(OPT_DATA_DOUBLE) |
+                BIT(OPT_DATA_STRBUF);
+
+        if (!d->data)
+                return;
+
+        if (0 == (BIT(d->data_type) & printable))
+                return;
+
+        pr_color(FG_LT_BLUE, " ( ");
+
+        switch (d->data_type) {
+        case OPT_DATA_INT:
+                pr_color(FG_LT_BLUE, "%jd", (int64_t){ ({ int64_t x; ptr_signed_word_read(d->data, d->data_sz, &x); x; })});
+                break;
+        case OPT_DATA_UINT:
+                pr_color(FG_LT_BLUE, "%ju", (uint64_t){ ({ uint64_t x; ptr_unsigned_word_read(d->data, d->data_sz, &x); x; })});
+                break;
+        case OPT_DATA_FLOAT:
+                pr_color(FG_LT_BLUE, "%.4f", *(float *)d->data);
+                break;
+        case OPT_DATA_DOUBLE:
+                pr_color(FG_LT_BLUE, "%.4lf", *(double *)d->data);
+                break;
+        case OPT_DATA_STRBUF:
+                pr_color(FG_LT_BLUE, "\"%s\"", (char *)d->data);
+                break;
+        }
+
+        pr_raw(" )");
+}
+
+static void longopts_help(void)
+{
+        const opt_desc_t *i;
+        char *buf;
+        size_t buf_len;
+        size_t s = 0;
+
+        // find max param text length
+        for_each_opt(i) {
+                size_t t = 0;
+
+                if (is_valid_short_opt(i)) {
+                        t += 1 + 1 + 1; // '-' 'o' ' '
+                }
+
+                if (i->long_opt && i->long_opt[0]) {
+                        t += 2 + strlen(i->long_opt) + 1; // '--' 'longopt' ' '
+                }
+
+                if (i->has_arg == required_argument) {
+                        t += 4; // '<..>'
+                }
+
+                // pick longest
+                if (t > s)
+                        s = t;
+        }
+
+        buf_len = s + 8; // 8 whitespaces
+        buf = malloc(buf_len);
+        if (!buf) {
+                pr_err("failed to allocate buffer\n");
+                return;
+        }
+
+        for_each_opt(i) {
+                size_t len = 0;
+
+                memset(buf, '\0', buf_len);
+
+                if (is_valid_short_opt(i))
+                        len += snprintf(buf + len, buf_len - len, "-%c ", i->short_opt[0]);
+
+                if (i->long_opt && i->long_opt[0])
+                        len += snprintf(buf + len, buf_len - len, "--%s ", i->long_opt);
+
+                if (i->has_arg == required_argument)
+                        len += snprintf(buf + len, buf_len - len, "<..>");
+
+                pr_color(FG_CYAN, "    %-*s", (int)buf_len, buf);
+
+                if (!i->help) {
+                        goto print_optval;
+                }
+
+                {
+                        char *c = strchr(i->help, '\n');
+                        if (!c) {
+                                pr_color(FG_GREEN, "%s", i->help);
+                                goto print_optval;
+                        }
+                }
+
+                {
+                        size_t l = strlen(i->help);
+                        char *h = calloc(l + 2, sizeof(char));
+                        char *p = h;
+                        if (!h) {
+                                pr_err("failed to allocate help buffer\n");
+                                return;
+                        }
+
+                        strncpy(h, i->help, l);
+
+                        while (1) {
+                                char *c = strchr(p, '\n');
+                                if (c)
+                                        c[0] = '\0';
+
+                                pr_color(FG_GREEN, "%s\n", p);
+
+                                if (c) {
+                                        pr_color(FG_GREEN, "    %-*s", (int)buf_len, "");
+                                        p = c + 1;
+
+                                        continue;
+                                }
+
+                                break;
+                        }
+
+                        free(h);
+                }
+
+print_optval:
+                if (i->optvals) {
+                        pr_raw("\n");
+                        optval_help_print(i, buf_len);
+
+                        continue;
+                }
+
+                opt_default_val_print(i);
+                pr_raw("\n");
         }
 }
 
@@ -397,14 +553,13 @@ static void longopts_help_messagebox(void)
                 snprintf_resize(&buf, &buf_pos, &buf_len, "    %-*s", (int)line_len, line);
 
                 if (!i->help) {
-                        snprintf_resize(&buf, &buf_pos, &buf_len, "\n");
                         goto print_optval;
                 }
 
                 {
                         char *c = strchr(i->help, '\n');
                         if (!c) {
-                                snprintf_resize(&buf, &buf_pos, &buf_len, "%s\n", i->help);
+                                snprintf_resize(&buf, &buf_pos, &buf_len, "%s ", i->help);
                                 goto print_optval;
                         }
                 }
@@ -442,14 +597,66 @@ static void longopts_help_messagebox(void)
 
 print_optval:
                 if (i->optvals) {
-                        for (const opt_val_t *v = i->optvals; v && v->str_val; v++) {
-                                snprintf_resize(&buf, &buf_pos, &buf_len, "    %-*s\t\t%s", (int)line_len, "", v->str_val);
+                        size_t _i = 0;
+                        uint64_t x;
+
+                        if (i->data) {
+                                ptr_unsigned_word_read(i->data, i->data_sz, &x);
+                        }
+
+                        snprintf_resize(&buf, &buf_pos, &buf_len, "\n");
+
+                        for (const opt_val_t *v = i->optvals; v && v->str_val; v++, _i++) {
+                                snprintf_resize(&buf, &buf_pos, &buf_len, "    %-*s    %s", (int)line_len, "", v->str_val);
 
                                 if (v->desc)
                                         snprintf_resize(&buf, &buf_pos, &buf_len, ": %s", v->desc);
 
+                                if (i->data && _i == x) {
+                                        snprintf_resize(&buf, &buf_pos, &buf_len, " (default)");
+                                }
+
                                 snprintf_resize(&buf, &buf_pos, &buf_len, "\n");
                         }
+                } else {
+                        do {
+                                uint32_t printable =
+                                        BIT(OPT_DATA_INT) |
+                                        BIT(OPT_DATA_UINT) |
+                                        BIT(OPT_DATA_FLOAT) |
+                                        BIT(OPT_DATA_DOUBLE) |
+                                        BIT(OPT_DATA_STRBUF);
+
+                                if (!i->data)
+                                        break;
+
+                                if (0 == (BIT(i->data_type) & printable))
+                                        break;
+
+                                snprintf_resize(&buf, &buf_pos, &buf_len, " ( ");
+
+                                switch (i->data_type) {
+                                case OPT_DATA_INT:
+                                        snprintf_resize(&buf, &buf_pos, &buf_len, "%jd", (int64_t){ ({ int64_t x; ptr_signed_word_read(i->data, i->data_sz, &x); x; })});
+                                        break;
+                                case OPT_DATA_UINT:
+                                        snprintf_resize(&buf, &buf_pos, &buf_len, "%ju", (uint64_t){ ({ uint64_t x; ptr_unsigned_word_read(i->data, i->data_sz, &x); x; })});
+                                        break;
+                                case OPT_DATA_FLOAT:
+                                        snprintf_resize(&buf, &buf_pos, &buf_len, "%.4f", *(float *)i->data);
+                                        break;
+                                case OPT_DATA_DOUBLE:
+                                        snprintf_resize(&buf, &buf_pos, &buf_len, "%.4lf", *(double *)i->data);
+                                        break;
+                                case OPT_DATA_STRBUF:
+                                        snprintf_resize(&buf, &buf_pos, &buf_len, "\"%s\"", (char *)i->data);
+                                        break;
+                                }
+
+                                snprintf_resize(&buf, &buf_pos, &buf_len, " )");
+                        } while (0);
+
+                        snprintf_resize(&buf, &buf_pos, &buf_len, "\n");
                 }
         }
 
@@ -460,112 +667,13 @@ print_optval:
 }
 #endif
 
-static void longopts_help(void)
-{
-        const opt_desc_t *i;
-        char *buf;
-        size_t buf_len;
-        size_t s = 0;
-
-        // find max param text length
-        for_each_opt(i) {
-                size_t t = 0;
-
-                if (is_valid_short_opt(i)) {
-                        t += 1 + 1 + 1; // '-' 'o' ' '
-                }
-
-                if (i->long_opt && i->long_opt[0]) {
-                        t += 2 + strlen(i->long_opt) + 1; // '--' 'longopt' ' '
-                }
-
-                if (i->has_arg == required_argument) {
-                        t += 4; // '<..>'
-                }
-
-                // pick longest
-                if (t > s)
-                        s = t;
-        }
-
-        buf_len = s + 8; // 8 whitespaces
-        buf = malloc(buf_len);
-        if (!buf) {
-                pr_err("failed to allocate buffer\n");
-                return;
-        }
-
-        for_each_opt(i) {
-                size_t len = 0;
-
-                memset(buf, '\0', buf_len);
-
-                if (is_valid_short_opt(i))
-                        len += snprintf(buf + len, buf_len - len, "-%c ", i->short_opt[0]);
-
-                if (i->long_opt && i->long_opt[0])
-                        len += snprintf(buf + len, buf_len - len, "--%s ", i->long_opt);
-
-                if (i->has_arg == required_argument)
-                        len += snprintf(buf + len, buf_len - len, "<..>");
-
-                pr_color(FG_CYAN, "    %-*s", (int)buf_len, buf);
-
-                if (!i->help) {
-                        pr_raw("\n");
-                        goto print_optval;
-                }
-
-                {
-                        char *c = strchr(i->help, '\n');
-                        if (!c) {
-                                pr_color(FG_GREEN, "%s\n", i->help);
-                                goto print_optval;
-                        }
-                }
-
-                {
-                        size_t l = strlen(i->help);
-                        char *h = calloc(l + 2, sizeof(char));
-                        char *p = h;
-                        if (!h) {
-                                pr_err("failed to allocate help buffer\n");
-                                return;
-                        }
-
-                        strncpy(h, i->help, l);
-
-                        while (1) {
-                                char *c = strchr(p, '\n');
-                                if (c)
-                                        c[0] = '\0';
-
-                                pr_color(FG_GREEN, "%s\n", p);
-
-                                if (c) {
-                                        pr_color(FG_GREEN, "    %-*s", (int)buf_len, "");
-                                        p = c + 1;
-
-                                        continue;
-                                }
-
-                                break;
-                        }
-
-                        free(h);
-                }
-
-print_optval:
-                if (i->optvals)
-                        optval_help_print(i, buf_len);
-        }
-}
-
 int longopts_parse(int argc, char *argv[], void nonopt_cb(char *arg))
 {
         struct option *lopts;
         char *optfmt;
         int err = 0;
+
+        // TODO: validate options
 
         optfmt = opt_fmt_generate();
         lopts = longopts_generate();
