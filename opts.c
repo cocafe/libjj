@@ -102,7 +102,6 @@ static struct option *longopts_generate(void)
 
         for_each_opt(i) {
                 struct option *o = &long_opts[c];
-                char *sopt = i->short_opt;
 
                 if (i->long_opt && !i->long_opt[0])
                         continue;
@@ -110,7 +109,7 @@ static struct option *longopts_generate(void)
                 o->name = i->long_opt;
                 o->has_arg = i->has_arg;
                 o->flag = NULL;
-                o->val = (sopt && sopt[0] && isalpha(sopt[0]) && isdigit(sopt[0])) ? sopt[0] : 0;
+                o->val = (is_valid_short_opt(i)) ? i->short_opt[0] : 0;
 
                 c++;
         }
@@ -581,8 +580,8 @@ int longopts_parse(int argc, char *argv[], void nonopt_cb(char *arg))
 
         while (1) {
                 const opt_desc_t *desc;
-                int optidx = -1;
-                int c = getopt_long(argc, argv, optfmt, lopts, &optidx);
+                int optidx = -1, c = -1;
+                c = getopt_long(argc, argv, optfmt, lopts, &optidx);
 
                 if (c == -1 && optidx == -1)
                         break;
@@ -614,7 +613,7 @@ int longopts_parse(int argc, char *argv[], void nonopt_cb(char *arg))
                 if (!desc) {
                         pr_rawlvl(ERROR, "descriptor for ");
 
-                        if (isprint(c))
+                        if (isalpha(c) || isdigit(c))
                                 pr_rawlvl(ERROR, "short option \'-%c\' ", c);
 
                         if (optidx >= 0)
