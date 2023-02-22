@@ -88,7 +88,7 @@ const opt_desc_t opt_##sopt __ALIGNED(sizeof(void *)) __SECTION("section_opt_des
 #define sopt_strptr(sopt, ref, help) \
                 __sopt_entry(sopt, required_argument, ref, ref_sz, OPT_DATA_STRPTR, NULL, NULL, help)
 
-#define sopt_optval(sopt, lopt, ref, ref_sz, optval, help) \
+#define sopt_optval(sopt, ref, ref_sz, optval, help) \
                 __sopt_entry(sopt, required_argument, ref, ref_sz, OPT_DATA_UINT, NULL, optval, help)
 
 
