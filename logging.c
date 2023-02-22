@@ -283,6 +283,10 @@ int logging_init(void)
         int err = 0;
 
 #ifdef __WINNT__
+        char *alloc_con = getenv("ALLOC_CONSOLE");
+        if (alloc_con && alloc_con[0] == '1')
+                g_console_alloc = 1;
+
         if ((err = console_init()))
                 return err;
 
