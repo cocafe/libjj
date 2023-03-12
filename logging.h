@@ -139,7 +139,7 @@ extern uint32_t g_logprint_colored;
 
 extern uint32_t g_console_alloc;
 extern uint32_t g_console_show;
-extern HWND g_console_wnd;
+extern HWND g_console_hwnd;
 
 int is_console_hid(void);
 int is_console_allocated(void);

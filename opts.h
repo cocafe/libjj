@@ -166,4 +166,10 @@ const opt_desc_t opt_##lopt __ALIGNED(sizeof(void *)) __SECTION("section_opt_des
 int longopts_parse(int argc, char *argv[], void nonopt_cb(char *arg));
 int wchar_longopts_parse(int argc, wchar_t *wargv[], void nonopt_cb(char *arg));
 
+#ifdef UNICODE
+#define lopts_parse wchar_longopts_parse
+#else
+#define lopts_parse longopts_parse
+#endif
+
 #endif // __JJ_OPTS_H__
