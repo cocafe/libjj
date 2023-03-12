@@ -290,6 +290,8 @@ int logging_init(void)
         if ((err = console_init()))
                 return err;
 
+        if (is_console_allocated())
+                logging_colored_set(0);
 #endif
 
         return err;
