@@ -143,6 +143,7 @@ extern HWND g_console_hwnd;
 
 int is_console_hid(void);
 int is_console_allocated(void);
+void console_alloc_set(int enabled);
 void console_hide(void);
 void console_show(int set_focus);
 int console_title_set(wchar_t *title);

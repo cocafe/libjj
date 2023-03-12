@@ -60,6 +60,11 @@ int is_console_allocated(void)
         return g_console_is_allocated ? 1 : 0;
 }
 
+void console_alloc_set(int enabled)
+{
+        g_console_alloc = enabled ? 1 : 0;
+}
+
 static void console_stdio_redirect(void)
 {
         HANDLE ConsoleOutput = GetStdHandle(STD_OUTPUT_HANDLE);
