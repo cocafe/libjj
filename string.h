@@ -17,6 +17,7 @@
 #define is_strptr_set(s)        (!is_strptr_not_set((s)))
 
 #define WCBUF_LEN               ARRAY_SIZE
+#define WCSLEN_BYTE(s)          (wcslen(s) * sizeof(wchar_t))
 
 int bin_snprintf(char *str, size_t slen, uint64_t val, size_t vsize);
 int vprintf_resize(char **buf, size_t *pos, size_t *len, const char *fmt, va_list arg);
