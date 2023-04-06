@@ -14,6 +14,11 @@
 #include "iconv.h"
 #include "file.h"
 #include "logging.h"
+#include "opts.h"
+
+static uint32_t json_print = 0;
+lopt_noarg(json_print, &json_print, sizeof(uint32_t), &(uint32_t){ 1 }, "Print while reading JSON");
+lopt_noarg(no_json_print, &json_print, sizeof(uint32_t), &(uint32_t){ 0 }, "Do not print while reading JSON");
 
 static uint32_t jkey_to_cjson_type[] = {
         [JKEY_TYPE_UNKNOWN]      = cJSON_Invalid,
@@ -1230,6 +1235,9 @@ static jkey_t *jkey_child_key_find(jkey_t *parent, cJSON *child_node)
 static void cjson_node_print(cJSON *node, uint32_t depth, const size_t *arr_idx)
 {
         static const char json_indent[32] = { [0 ... 31] = '\t' };
+
+        if (!json_print)
+                return;
 
         // \0 is padded with [] declaration
         if (depth >= (sizeof(json_indent) - 1))
