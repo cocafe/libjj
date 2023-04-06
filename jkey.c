@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <errno.h>
 #include <math.h>
@@ -443,7 +444,7 @@ void *jbuf_wstrptr_add(jbuf_t *b, char *key, wchar_t **ref)
         return cookie;
 }
 
-void *jbuf_strval_add(jbuf_t *b, char *key, uint32_t *ref, char *map[], size_t map_cnt)
+void *jbuf_strval_add(jbuf_t *b, char *key, uint32_t *ref, const char *map[], size_t map_cnt)
 {
         jkey_t *k;
         void *cookie = jbuf_key_add(b, JKEY_TYPE_UINT, key, ref, sizeof(uint32_t));
@@ -584,7 +585,7 @@ void *jbuf_offset_wstrbuf_add(jbuf_t *b, char *key, ssize_t offset, size_t len)
         return cookie;
 }
 
-void *jbuf_offset_strval_add(jbuf_t *b, char *key, ssize_t offset, char *map[], size_t map_cnt)
+void *jbuf_offset_strval_add(jbuf_t *b, char *key, ssize_t offset, const char *map[], size_t map_cnt)
 {
         void *cookie = jbuf_strval_add(b, key, NULL, map, map_cnt);
         if (!cookie)
@@ -782,7 +783,7 @@ static int jkey_string_write(jkey_t *jkey, cJSON *node)
                         return ptr_word_write(dst, jkey->data.sz, t);
                 } else if (jkey->strval.map) {
                         return strval_map_to_int(dst, jkey->data.sz, json_str,
-                                                 jkey->strval.map,
+                                                 (char **)jkey->strval.map,
                                                  jkey->strval.cnt);
                 } else {
                         pr_err("cannot convert string to number for key [%s]\n", jkey->key);
@@ -791,6 +792,7 @@ static int jkey_string_write(jkey_t *jkey, cJSON *node)
 
                 break;
 
+        // FIXME: JKEY_TYPE_STRREF: ??
         case JKEY_TYPE_STRBUF:
         case JKEY_TYPE_STRPTR:
                 if (jkey->data.sz == 0) {

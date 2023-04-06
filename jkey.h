@@ -86,7 +86,7 @@ struct json_key {
         } obj;
 
         struct {
-                char          **map;
+                const char    **map;
                 size_t          cnt;
         } strval;
 
@@ -139,7 +139,7 @@ void *jbuf_s64_add(jbuf_t *b, char *key, int64_t *ref);
 void *jbuf_double_add(jbuf_t *b, char *key, double *ref);
 void *jbuf_bool_add(jbuf_t *b, char *key, jkey_bool_t *ref);
 
-void *jbuf_strval_add(jbuf_t *b, char *key, uint32_t *ref, char *map[], size_t map_cnt);
+void *jbuf_strval_add(jbuf_t *b, char *key, uint32_t *ref, const char *map[], size_t map_cnt);
 void *jbuf_strptr_add(jbuf_t *b, char *key, char **ref);
 void *jbuf_strbuf_add(jbuf_t *b, char *key, char *ref, size_t bytes);
 void *jbuf_strref_add(jbuf_t *b, char *key, char *ref);
@@ -207,7 +207,7 @@ void *jbuf_uuid_str_add(jbuf_t *b, char *key, char *ref);
 
 void *jbuf_offset_strbuf_add(jbuf_t *b, char *key, ssize_t offset, size_t len);
 void *jbuf_offset_wstrbuf_add(jbuf_t *b, char *key, ssize_t offset, size_t len);
-void *jbuf_offset_strval_add(jbuf_t *b, char *key, ssize_t offset, char *map[], size_t map_cnt);
+void *jbuf_offset_strval_add(jbuf_t *b, char *key, ssize_t offset, const char *map[], size_t map_cnt);
 
 void jkey_ref_parent_set(jbuf_t *b, void *cookie, ssize_t offset);
 void jkey_base_ref_parent_set(jbuf_t *b, void *cookie, ssize_t offset);
