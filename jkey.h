@@ -205,8 +205,8 @@ void *jbuf_uuid_str_add(jbuf_t *b, char *key, char *ref);
 #define jbuf_array_data_key(buf, type) jbuf_offset_add(buf, type, NULL, 0)
 #define jbuf_array_obj_data_key(buf, cookie) jbuf_offset_obj_open(buf, cookie, NULL, 0)
 
-void *jbuf_offset_strbuf_add(jbuf_t *b, char *key, ssize_t offset, size_t len);
-void *jbuf_offset_wstrbuf_add(jbuf_t *b, char *key, ssize_t offset, size_t len);
+void *jbuf_offset_strbuf_add(jbuf_t *b, char *key, ssize_t offset, size_t bytes);
+void *jbuf_offset_wstrbuf_add(jbuf_t *b, char *key, ssize_t offset, size_t bytes);
 void *jbuf_offset_strval_add(jbuf_t *b, char *key, ssize_t offset, const char *map[], size_t map_cnt);
 
 void jkey_ref_parent_set(jbuf_t *b, void *cookie, ssize_t offset);

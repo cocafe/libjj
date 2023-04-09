@@ -571,9 +571,9 @@ void *jbuf_uuid_str_add(jbuf_t *b, char *key, char *ref)
         return cookie;
 }
 
-void *jbuf_offset_strbuf_add(jbuf_t *b, char *key, ssize_t offset, size_t len)
+void *jbuf_offset_strbuf_add(jbuf_t *b, char *key, ssize_t offset, size_t bytes)
 {
-        void *cookie = jbuf_strbuf_add(b, key, NULL, len);
+        void *cookie = jbuf_strbuf_add(b, key, NULL, bytes);
         if (!cookie)
                 return NULL;
 
@@ -582,9 +582,9 @@ void *jbuf_offset_strbuf_add(jbuf_t *b, char *key, ssize_t offset, size_t len)
         return cookie;
 }
 
-void *jbuf_offset_wstrbuf_add(jbuf_t *b, char *key, ssize_t offset, size_t len)
+void *jbuf_offset_wstrbuf_add(jbuf_t *b, char *key, ssize_t offset, size_t bytes)
 {
-        void *cookie = jbuf_offset_strbuf_add(b, key, offset, len);
+        void *cookie = jbuf_offset_strbuf_add(b, key, offset, bytes);
         jkey_wchar_set(b, cookie);
 
         return cookie;
@@ -1204,7 +1204,7 @@ static int jkey_child_arr_key_update(jkey_t *parent)
                 }
 
                 case JKEY_TYPE_LIST_ARRAY:
-                        child->obj.base_ref = NULL;
+//                        child->obj.base_ref = NULL;
                         child->obj.arr.list.head_inited = 0;
 
                         break;
