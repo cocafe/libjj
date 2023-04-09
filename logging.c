@@ -24,6 +24,7 @@ static uint32_t g_console_is_allocated;
 
 #ifdef SUBSYS_WINDOW
 lopt_noarg(alloc_console, &g_console_alloc, sizeof(g_console_alloc), &(uint32_t){ 1 }, "Alloc console window");
+lopt_noarg(no_console, &g_console_alloc, sizeof(g_console_alloc), &(uint32_t){ 0 }, "Not to alloc console window");
 lopt_noarg(hide_console, &g_console_show, sizeof(g_console_show), &(uint32_t){ 0 }, "Hide console window on startup");
 #endif
 
