@@ -806,9 +806,11 @@ static int jkey_string_write(jkey_t *jkey, cJSON *node)
                 }
 
                 if (jkey->data.is_wchar) {
-                        if ((err = iconv_utf82wc(json_str, json_len, dst, alloc_sz - 2))) {
-                                pr_err("iconv_convert() failed\n");
-                                return err;
+                        if (is_strptr_set(json_str)) {
+                                if ((err = iconv_utf82wc(json_str, json_len, dst, alloc_sz - 2))) {
+                                        pr_err("iconv_convert() failed\n");
+                                        return err;
+                                }
                         }
                 } else {
                         // jkey->data.sz is allocated above, always > json_len
@@ -1568,7 +1570,7 @@ int jbuf_traverse_print_post(jkey_t *jkey, int has_next, int depth, int argc, va
                 goto line_ending;
         }
 
-        if (jkey->data.is_wchar) {
+        if (jkey->data.is_wchar && is_strptr_set((wchar_t *)ref)) {
                 size_t wc_len = wcslen(ref);
                 size_t utf8_bytes = wc_len * 2;
                 str_utf8 = calloc(utf8_bytes, sizeof(char));
