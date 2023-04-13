@@ -69,6 +69,8 @@ struct tray {
         struct tray_icon        icon;
         struct tray_menu       *menu;
 
+        wchar_t                 *tip;
+
         // tray icon click callback
         tray_click_cb           lbtn_click;
         tray_click_cb           lbtn_dblclick;
@@ -76,6 +78,8 @@ struct tray {
 
 int tray_init(struct tray *tray, HINSTANCE ins);
 void tray_exit(struct tray *tray);
+
+void tray_tooltip_set(struct tray *tray, wchar_t *tip);
 
 void tray_update_post(struct tray *tray);
 void tray_update(struct tray *tray);

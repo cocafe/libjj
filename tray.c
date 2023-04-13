@@ -10,7 +10,7 @@
 #include "tray.h"
 
 void tray_icon_taskbar_add(struct tray *tray);
-void tray_icon_update(struct tray *tray);
+void tray_update(struct tray *tray);
 
 static UINT msg_taskbar_created;
 
@@ -101,7 +101,7 @@ static LRESULT CALLBACK tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
         default:
                 if (msg == msg_taskbar_created) {
                         tray_icon_taskbar_add(tray);
-                        tray_icon_update(tray);
+                        tray_update_post(tray);
                 }
 
                 break;
@@ -113,7 +113,7 @@ out:
         return 1;
 }
 
-HMENU tray_menu_update(struct tray_menu *m, UINT *id)
+HMENU tray_menu_do_update(struct tray_menu *m, UINT *id)
 {
         HMENU hmenu = CreatePopupMenu();
         MENUITEMINFO item;
@@ -152,7 +152,7 @@ HMENU tray_menu_update(struct tray_menu *m, UINT *id)
 
                 if (m->submenu != NULL) {
                         item.fMask |= MIIM_SUBMENU;
-                        item.hSubMenu = tray_menu_update(m->submenu, id);
+                        item.hSubMenu = tray_menu_do_update(m->submenu, id);
                 }
 
                 // @id may change after creating sub menu
@@ -226,7 +226,31 @@ update_icon:
         Shell_NotifyIcon(NIM_MODIFY, nid);
 }
 
-void tray_update(struct tray *tray)
+void tray_tooltip_set(struct tray *tray, wchar_t *tip)
+{
+        NOTIFYICONDATA *nid = &tray->data.nid;
+
+        if (!tip)
+                return;
+
+        wcsncpy(nid->szTip, tip, ARRAY_SIZE(nid->szTip));
+        nid->szTip[ARRAY_SIZE(nid->szTip) - 1] = L'\0';
+}
+
+void tray_tooltip_update(struct tray *tray)
+{
+        NOTIFYICONDATA *nid = &tray->data.nid;
+
+        if (is_strptr_not_set(nid->szTip)) {
+                nid->uFlags &= ~NIF_TIP;
+        } else {
+                nid->uFlags |= NIF_TIP;
+        }
+
+        Shell_NotifyIcon(NIM_MODIFY, nid);
+}
+
+void tray_menu_update(struct tray *tray)
 {
         HMENU prevmenu = tray->data.hmenu;
         HMENU hmenu = prevmenu;
@@ -238,12 +262,10 @@ void tray_update(struct tray *tray)
         if (hmenu == NULL)
                 goto out;
 
-        tray->data.hmenu = tray_menu_update(tray->menu, &id);
+        tray->data.hmenu = tray_menu_do_update(tray->menu, &id);
         tray->data.max_menu_id = id;
 
         SendMessage(tray->data.hwnd, WM_INITMENUPOPUP, (WPARAM)hmenu, 0);
-
-        tray_icon_update(tray);
 
         if (prevmenu != NULL && prevmenu != INVALID_HANDLE_VALUE) {
                 DestroyMenu(prevmenu);
@@ -256,6 +278,13 @@ out:
 void tray_update_post(struct tray *tray)
 {
         PostMessage(tray->data.hwnd, WM_TRAY_UPDATE_MSG, TRAY_UPDATE_MAGIC, (LPARAM)tray);
+}
+
+void tray_update(struct tray *tray)
+{
+        tray_menu_update(tray);
+        tray_icon_update(tray);
+        tray_tooltip_update(tray);
 }
 
 int tray_init(struct tray *tray, HINSTANCE ins)
@@ -304,8 +333,9 @@ int tray_init(struct tray *tray, HINSTANCE ins)
         ChangeWindowMessageFilterEx(hwnd, msg_taskbar_created, MSGFLT_ALLOW, NULL);
 
         tray_icon_init(tray);
-        tray_update(tray);
+        tray_tooltip_set(tray, tray->tip);
         tray_icon_taskbar_add(tray);
+        tray_update(tray);
 
         return 0;
 }
