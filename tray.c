@@ -9,12 +9,19 @@
 #include "utils.h"
 #include "tray.h"
 
+void tray_icon_create(struct tray *tray);
+
 static LRESULT CALLBACK tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+        static UINT taskbar_restart;
         struct tray *tray = (void *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
         struct tray_data *data = &tray->data;
 
         switch (msg) {
+        case WM_CREATE:
+                taskbar_restart = RegisterWindowMessage(L"TaskbarCreated");
+                break;
+
         case WM_CLOSE:
                 DestroyWindow(hwnd);
                 goto out;
@@ -90,6 +97,10 @@ static LRESULT CALLBACK tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
                 break;
 
         default:
+                if (msg == taskbar_restart) {
+                        tray_icon_create(tray);
+                }
+
                 break;
         }
 
@@ -230,14 +241,39 @@ void tray_update_post(struct tray *tray)
         PostMessage(tray->data.hwnd, WM_TRAY_UPDATE_MSG, TRAY_UPDATE_MAGIC, (LPARAM)tray);
 }
 
+void tray_icon_create(struct tray *tray)
+{
+        NOTIFYICONDATA *nid = &tray->data.nid;
+        NOTIFYICONDATA last_nid = { 0 };
+
+        if (tray->data.nid_created) {
+                memcpy(&last_nid, nid, sizeof(last_nid));
+                Shell_NotifyIcon(NIM_DELETE, nid);
+        }
+
+        memset(nid, 0, sizeof(NOTIFYICONDATA));
+        nid->cbSize             = sizeof(NOTIFYICONDATA);
+        nid->hWnd               = tray->data.hwnd;
+        nid->uID                = 0;
+        nid->uFlags             = NIF_ICON | NIF_MESSAGE | NIF_SHOWTIP;
+        nid->uCallbackMessage   = WM_TRAY_CALLBACK_MSG;
+
+        if (tray->data.nid_created)
+                nid->hIcon = last_nid.hIcon;
+
+        Shell_NotifyIcon(NIM_ADD, nid);
+}
+
 int tray_init(struct tray *tray, HINSTANCE ins)
 {
         WNDCLASSEX *wc;
-        NOTIFYICONDATA *nid;
         HWND hwnd;
 
         if (!tray)
                 return -EINVAL;
+
+        tray->data.nid_created = 0;
+        memset(&tray->data.nid, 0, sizeof(NOTIFYICONDATA));
 
         wc = &tray->data.wc;
         memset(wc, 0x00, sizeof(WNDCLASSEX));
@@ -259,21 +295,14 @@ int tray_init(struct tray *tray, HINSTANCE ins)
         SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)tray);
         UpdateWindow(hwnd);
 
-        nid = &tray->data.nid;
-        memset(nid, 0, sizeof(NOTIFYICONDATA));
-        nid->cbSize             = sizeof(NOTIFYICONDATA);
-        nid->hWnd               = hwnd;
-        nid->uID                = 0;
-        nid->uFlags             = NIF_ICON | NIF_MESSAGE;
-        nid->uCallbackMessage   = WM_TRAY_CALLBACK_MSG;
-        Shell_NotifyIcon(NIM_ADD, nid);
-
         // initial value
         tray->data.hmenu = INVALID_HANDLE_VALUE;
         tray->data.ins = ins;
         tray->data.hwnd = hwnd;
 
         pthread_mutex_init(&tray->data.update_lck, NULL);
+
+        tray_icon_create(tray);
 
         tray_update(tray);
 

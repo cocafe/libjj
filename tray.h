@@ -48,6 +48,7 @@ struct tray_data {
         WNDCLASSEX      wc;
 
         NOTIFYICONDATA  nid;
+        uint32_t        nid_created;
 
         HWND            hwnd;
         HMENU           hmenu;
