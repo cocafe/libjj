@@ -9,17 +9,19 @@
 #include "utils.h"
 #include "tray.h"
 
-void tray_icon_create(struct tray *tray);
+void tray_icon_taskbar_add(struct tray *tray);
+void tray_icon_update(struct tray *tray);
+
+static UINT msg_taskbar_created;
 
 static LRESULT CALLBACK tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-        static UINT taskbar_restart;
+
         struct tray *tray = (void *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
         struct tray_data *data = &tray->data;
 
         switch (msg) {
         case WM_CREATE:
-                taskbar_restart = RegisterWindowMessage(L"TaskbarCreated");
                 break;
 
         case WM_CLOSE:
@@ -97,8 +99,9 @@ static LRESULT CALLBACK tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
                 break;
 
         default:
-                if (msg == taskbar_restart) {
-                        tray_icon_create(tray);
+                if (msg == msg_taskbar_created) {
+                        tray_icon_taskbar_add(tray);
+                        tray_icon_update(tray);
                 }
 
                 break;
@@ -166,22 +169,36 @@ HMENU tray_menu_update(struct tray_menu *m, UINT *id)
         return hmenu;
 }
 
+void tray_icon_init(struct tray *tray)
+{
+        NOTIFYICONDATA *nid = &tray->data.nid;
+
+        memset(nid, 0, sizeof(NOTIFYICONDATA));
+        nid->cbSize             = sizeof(NOTIFYICONDATA);
+        nid->hWnd               = tray->data.hwnd;
+        nid->uID                = 0;
+        nid->uFlags             = NIF_ICON | NIF_MESSAGE;
+        nid->uCallbackMessage   = WM_TRAY_CALLBACK_MSG;
+}
+
+void tray_icon_taskbar_add(struct tray *tray)
+{
+        if (Shell_NotifyIcon(NIM_ADD, &tray->data.nid) != TRUE) {
+                pr_err("failed to create tray icon");
+        }
+}
+
 void tray_icon_update(struct tray *tray)
 {
         NOTIFYICONDATA *nid = &tray->data.nid;
         HICON hicon = NULL;
 
         if (tray->icon.id > 0) {
-                if (tray->icon.id == tray->icon.id_last)
-                        return;
-
                 hicon = LoadIcon(tray->data.ins, MAKEINTRESOURCE(tray->icon.id));
                 if (hicon == NULL) {
                         pr_err("LoadIcon() failed, err=%lu\n", GetLastError());
                         goto update_icon;
                 }
-
-                tray->icon.id_last = tray->icon.id;
         } else if (tray->icon.path != NULL) {
                 int ret;
 
@@ -241,29 +258,6 @@ void tray_update_post(struct tray *tray)
         PostMessage(tray->data.hwnd, WM_TRAY_UPDATE_MSG, TRAY_UPDATE_MAGIC, (LPARAM)tray);
 }
 
-void tray_icon_create(struct tray *tray)
-{
-        NOTIFYICONDATA *nid = &tray->data.nid;
-        NOTIFYICONDATA last_nid = { 0 };
-
-        if (tray->data.nid_created) {
-                memcpy(&last_nid, nid, sizeof(last_nid));
-                Shell_NotifyIcon(NIM_DELETE, nid);
-        }
-
-        memset(nid, 0, sizeof(NOTIFYICONDATA));
-        nid->cbSize             = sizeof(NOTIFYICONDATA);
-        nid->hWnd               = tray->data.hwnd;
-        nid->uID                = 0;
-        nid->uFlags             = NIF_ICON | NIF_MESSAGE | NIF_SHOWTIP;
-        nid->uCallbackMessage   = WM_TRAY_CALLBACK_MSG;
-
-        if (tray->data.nid_created)
-                nid->hIcon = last_nid.hIcon;
-
-        Shell_NotifyIcon(NIM_ADD, nid);
-}
-
 int tray_init(struct tray *tray, HINSTANCE ins)
 {
         WNDCLASSEX *wc;
@@ -302,9 +296,16 @@ int tray_init(struct tray *tray, HINSTANCE ins)
 
         pthread_mutex_init(&tray->data.update_lck, NULL);
 
-        tray_icon_create(tray);
+        msg_taskbar_created = RegisterWindowMessage(L"TaskbarCreated");
 
+        // by default, elevated privileges program
+        // will not be received messages from a lower-privileged process
+        ChangeWindowMessageFilterEx(hwnd, WM_COMMAND, MSGFLT_ALLOW, NULL);
+        ChangeWindowMessageFilterEx(hwnd, msg_taskbar_created, MSGFLT_ALLOW, NULL);
+
+        tray_icon_init(tray);
         tray_update(tray);
+        tray_icon_taskbar_add(tray);
 
         return 0;
 }

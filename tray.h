@@ -61,7 +61,6 @@ struct tray_icon {
         wchar_t        *path;
         wchar_t         path_last[_MAX_PATH];
         int             id;     // icon id is preferred, id > 0
-        int             id_last;
 };
 
 struct tray {
