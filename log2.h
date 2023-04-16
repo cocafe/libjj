@@ -9,6 +9,7 @@
 #define _TOOLS_LINUX_LOG2_H
 
 #include <stdint.h>
+#include "compiler.h"
 
 #ifdef __CYGWIN__
 #include <string.h>

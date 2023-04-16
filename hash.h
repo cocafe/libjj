@@ -87,13 +87,13 @@ static __always_inline uint32_t hash_64_generic(uint64_t val, unsigned int bits)
 
 static inline uint32_t hash_ptr(const void *ptr, unsigned int bits)
 {
-	return hash_long((unsigned long)ptr, bits);
+	return hash_long((intptr_t)ptr, bits);
 }
 
 /* This really should be called fold32_ptr; it does no hashing to speak of. */
 static inline uint32_t hash32_ptr(const void *ptr)
 {
-	unsigned long val = (unsigned long)ptr;
+	unsigned long val = (unsigned long){ (intptr_t)ptr };
 
 #if BITS_PER_LONG == 64
 	val ^= (val >> 32);

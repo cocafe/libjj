@@ -36,7 +36,7 @@
  *
  */
 #define container_of(ptr, type, member) ({			\
-	const typeof(((type *)0)->member) * __mptr = (ptr);	\
+	const typeof(((type *)0)->member) * __mptr = (void *)(ptr);	\
 	(type *)((char *)__mptr - offsetof(type, member)); })
 #endif
 
@@ -164,6 +164,11 @@
  * Using extra __may_alias__ type to allow aliasing
  * in this case.
  */
+
+typedef uint8_t __attribute__((__may_alias__))  __u8;
+typedef uint16_t __attribute__((__may_alias__)) __u16;
+typedef uint32_t __attribute__((__may_alias__)) __u32;
+typedef uint64_t __attribute__((__may_alias__)) __u64;
 
 typedef uint8_t __attribute__((__may_alias__))  __u8_alias_t;
 typedef uint16_t __attribute__((__may_alias__)) __u16_alias_t;
