@@ -70,7 +70,7 @@
 #define BG_LT_WHITE             107
 
 #define LOG_COLOR_VERBOSE       FG_LT_BLACK
-#define LOG_COLOR_DBG           FG_LT_GREEN
+#define LOG_COLOR_DEBUG         FG_LT_GREEN
 #define LOG_COLOR_INFO          FG_LT_BLUE
 #define LOG_COLOR_NOTICE        FG_LT_CYAN
 #define LOG_COLOR_WARN          FG_LT_YELLOW
@@ -310,8 +310,8 @@ int mb_printf(const char *title, unsigned flags, const char *fmt, ...);
                 if (!(g_logprint_level & LOG_LEVEL_DEBUG))                      \
                         break;                                                  \
                                                                                 \
-                __pr_wrapped(stdout, LOG_COLOR_DBG, "%s(): ", __func__);        \
-                __pr_wrapped(stdout, LOG_COLOR_DBG, msg, ##fmt);                \
+                __pr_wrapped(stdout, LOG_COLOR_DEBUG, "%s(): ", __func__);        \
+                __pr_wrapped(stdout, LOG_COLOR_DEBUG, msg, ##fmt);                \
         } while(0)
 
 #define pr_verbose(msg, fmt...)                                                 \
