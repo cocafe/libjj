@@ -170,6 +170,7 @@ int logging_exit(void);
 
 #define mb_msg(fmt, ...)        mb_printf(TT_INFO, MB_OK, fmt, ##__VA_ARGS__)
 #define mb_err(fmt, ...)        mb_printf(TT_ERROR, MB_ICONERROR | MB_OK, fmt, ##__VA_ARGS__)
+#define mb_warn(fmt, ...)       mb_printf(TT_WARNING, MB_ICONWARNING | MB_OK, fmt, ##__VA_ARGS__)
 #define mb_info(fmt, ...)       mb_printf(TT_INFO, MB_ICONINFORMATION | MB_OK, fmt, ##__VA_ARGS__)
 
 #define mb_func_err()           mb_err("%s:%d %s() failed", __FILE__, __LINE__, __func__)
@@ -409,16 +410,6 @@ int mb_printf(const char *title, unsigned flags, const char *fmt, ...);
                 __t = 1;                                                        \
         } while(0)
 
-#if defined __WINNT__
-#define pr_mb_err(msg, fmt...)                                                  \
-        do {                                                                    \
-                pr_err(msg, ##fmt);                                             \
-                mb_err(msg, ##fmt);                                             \
-        } while(0)
-#else
-#define pr_mb_err pr_err
-#endif
-
 #define pr_warn(msg, fmt...)                                                    \
         do {                                                                    \
                 if (zlog_inited)                                                \
@@ -442,6 +433,30 @@ int mb_printf(const char *title, unsigned flags, const char *fmt, ...);
                 __pr_wrapped(LOG_ERR_STREAM, LOG_COLOR_FATAL, "%s(): ", __func__);  \
                 __pr_wrapped(LOG_ERR_STREAM, LOG_COLOR_FATAL, msg, ##fmt);          \
         } while(0)
+
+#if defined __WINNT__
+#define pr_mb_info(msg, fmt...)                                                 \
+        do {                                                                    \
+                pr_info(msg, ##fmt);                                            \
+                mb_info(msg, ##fmt);                                            \
+        } while(0)
+
+#define pr_mb_warn(msg, fmt...)                                                 \
+        do {                                                                    \
+                pr_warn(msg, ##fmt);                                            \
+                mb_warn(msg, ##fmt);                                            \
+        } while(0)
+
+#define pr_mb_err(msg, fmt...)                                                  \
+        do {                                                                    \
+                pr_err(msg, ##fmt);                                             \
+                mb_err(msg, ##fmt);                                             \
+        } while(0)
+#else
+#define pr_mb_info pr_info
+#define pr_mb_warn pr_warn
+#define pr_mb_err pr_err
+#endif
 
 // debug color:
 // pr_verbose("VERBOSE\n");
