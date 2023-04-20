@@ -74,7 +74,7 @@
 #define LOG_COLOR_INFO          FG_LT_BLUE
 #define LOG_COLOR_NOTICE        FG_LT_CYAN
 #define LOG_COLOR_WARN          FG_LT_YELLOW
-#define LOG_COLOR_ERR           FG_RED
+#define LOG_COLOR_ERROR         FG_RED
 #define LOG_COLOR_FATAL         FG_LT_RED
 
 enum {
@@ -392,8 +392,8 @@ int mb_printf(const char *title, unsigned flags, const char *fmt, ...);
                 if (!(g_logprint_level & LOG_LEVEL_ERROR))                      \
                         break;                                                  \
                                                                                 \
-                __pr_wrapped(LOG_ERR_STREAM, LOG_COLOR_ERR, "%s(): ", __func__);\
-                __pr_wrapped(LOG_ERR_STREAM, LOG_COLOR_ERR, msg, ##fmt);        \
+                __pr_wrapped(LOG_ERR_STREAM, LOG_COLOR_ERROR, "%s(): ", __func__);\
+                __pr_wrapped(LOG_ERR_STREAM, LOG_COLOR_ERROR, msg, ##fmt);        \
         } while(0)
 
 #define pr_err_once(msg, fmt...)                                                \
@@ -405,8 +405,8 @@ int mb_printf(const char *title, unsigned flags, const char *fmt, ...);
                 if (zlog_inited)                                                \
                         dzlog_error(msg, ##fmt);                                \
                                                                                 \
-                __pr_wrapped(LOG_ERR_STREAM, LOG_COLOR_ERR, "%s(): ", __func__);\
-                __pr_wrapped(LOG_ERR_STREAM, LOG_COLOR_ERR, msg, ##fmt);        \
+                __pr_wrapped(LOG_ERR_STREAM, LOG_COLOR_ERROR, "%s(): ", __func__);\
+                __pr_wrapped(LOG_ERR_STREAM, LOG_COLOR_ERROR, msg, ##fmt);        \
                 __t = 1;                                                        \
         } while(0)
 
