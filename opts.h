@@ -25,6 +25,7 @@ enum opt_data_type {
         NUM_OPT_DATA_TYPES,
 };
 
+// MUST end with { NULL, NULL }
 struct opt_val {
         const char *str_val;
         const char *desc;
