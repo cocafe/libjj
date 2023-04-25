@@ -79,7 +79,7 @@ static LRESULT CALLBACK tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
 
                         if (GetMenuItemInfo(hmenu, wparam, FALSE, &item)) {
                                 menu = (void *)item.dwItemData;
-                                if (menu && menu->on_click != NULL) {
+                                if (menu && menu->on_click && !menu->disabled) {
                                         menu->on_click(menu);
                                         tray_update_post(tray);
                                 }
