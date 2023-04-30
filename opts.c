@@ -79,7 +79,7 @@ err_free:
         return NULL;
 }
 
-static struct option *longopts_generate(void)
+static struct option *longopts_generate(size_t *alloc_cnt)
 {
         struct option *long_opts;
         const opt_desc_t *i;
@@ -113,6 +113,9 @@ static struct option *longopts_generate(void)
 
                 c++;
         }
+
+        if (alloc_cnt)
+                *alloc_cnt = cnt;
 
         return long_opts;
 }
@@ -667,16 +670,30 @@ print_optval:
 }
 #endif
 
+static int is_valid_optarg(int argc, char *argv[], char *optarg)
+{
+        for (int i = 0; i < argc; i++) {
+                if (optarg == argv[i])
+                        return 1;
+        }
+
+        return 0;
+}
+
 int longopts_parse(int argc, char *argv[], void nonopt_cb(char *arg))
 {
         struct option *lopts;
+        size_t lopts_cnt = 0;
         char *optfmt;
         int err = 0;
 
         // TODO: validate options
 
+        // keeps getopt silent on error
+        // opterr = 0;
+
         optfmt = opt_fmt_generate();
-        lopts = longopts_generate();
+        lopts = longopts_generate(&lopts_cnt);
 
         if (!optfmt && !lopts) {
                 pr_dbg("no cmdline options defined\n");
@@ -696,6 +713,7 @@ int longopts_parse(int argc, char *argv[], void nonopt_cb(char *arg))
 
                 if (c == '?') {
                         err = -EINVAL;
+
                         goto out;
                 }
 
@@ -715,21 +733,36 @@ int longopts_parse(int argc, char *argv[], void nonopt_cb(char *arg))
                         goto out;
                 }
 
-                // FIXME: range of @optidx is not checked
                 desc = opt_desc_find((isalpha(c) || isdigit(c)) ? &(char){ c } : NULL,
-                                     (optidx >= 0) ? lopts[optidx].name : NULL);
+                                     (optidx >= 0 && optidx < (int)lopts_cnt) ? lopts[optidx].name : NULL);
                 if (!desc) {
-                        pr_rawlvl(ERROR, "descriptor for ");
+                        pr_rawlvl(ERROR, "unknown ");
 
                         if (isalpha(c) || isdigit(c))
                                 pr_rawlvl(ERROR, "short option \'-%c\' ", c);
 
                         if (optidx >= 0)
-                                pr_rawlvl(ERROR, "long option \'-%s\' ", lopts[optidx].name);
+                                pr_rawlvl(ERROR, "long option \'--%s\' ", lopts[optidx].name);
 
-                        pr_rawlvl(ERROR, "is not found\n");
+                        pr_rawlvl(ERROR, "\n");
 
-                        err = -EFAULT;
+                        err = -EINVAL;
+                        goto out;
+                }
+
+                // musl getopt will put optarg overflow argv[]
+                if ((desc->has_arg == required_argument) && !is_valid_optarg(argc, argv, optarg)) {
+                        pr_rawlvl(ERROR, "option ");
+
+                        if (isalpha(c) || isdigit(c))
+                                pr_rawlvl(ERROR, "\'-%c\' ", c);
+
+                        if (optidx >= 0)
+                                pr_rawlvl(ERROR, "\'--%s\' ", lopts[optidx].name);
+
+                        pr_rawlvl(ERROR, "requires an argument\n");
+
+                        err = -EINVAL;
                         goto out;
                 }
 
