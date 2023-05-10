@@ -750,22 +750,6 @@ int longopts_parse(int argc, char *argv[], void nonopt_cb(char *arg))
                         goto out;
                 }
 
-                // musl getopt will put optarg overflow argv[]
-                if ((desc->has_arg == required_argument) && !is_valid_optarg(argc, argv, optarg)) {
-                        pr_rawlvl(ERROR, "option ");
-
-                        if (isalpha(c) || isdigit(c))
-                                pr_rawlvl(ERROR, "\'-%c\' ", c);
-
-                        if (optidx >= 0)
-                                pr_rawlvl(ERROR, "\'--%s\' ", lopts[optidx].name);
-
-                        pr_rawlvl(ERROR, "requires an argument\n");
-
-                        err = -EINVAL;
-                        goto out;
-                }
-
                 if ((err = opt_desc_handle(desc, optarg)))
                         goto out;
         }
@@ -791,7 +775,8 @@ int wchar_longopts_parse(int argc, wchar_t *wargv[], void nonopt_cb(char *arg))
         char **argv;
         int ret = 0;
 
-        argv = calloc(argc, sizeof(char *));
+        // extra null terminated is required for getopt_long()
+        argv = calloc(argc + 1, sizeof(char *));
         if (!argv)
                 return -ENOMEM;
 
