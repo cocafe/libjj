@@ -164,6 +164,7 @@ const opt_desc_t opt_##lopt __ALIGNED(sizeof(void *)) __SECTION("section_opt_des
 #define lopt_noarg(lopt, ref, ref_sz, set, help) \
                 lsopt_noarg(\0, lopt, ref, ref_sz, set, help)
 
+void opts_helptxt_defval_print(int enabled);
 int longopts_parse(int argc, char *argv[], void nonopt_cb(char *arg));
 int wchar_longopts_parse(int argc, wchar_t *wargv[], void nonopt_cb(char *arg));
 

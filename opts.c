@@ -15,6 +15,13 @@
 
 extern const opt_desc_t __start_section_opt_desc, __stop_section_opt_desc;
 
+static int helptxt_default_value_print = 1;
+
+void opts_helptxt_defval_print(int enabled)
+{
+        helptxt_default_value_print = !!enabled;
+}
+
 static size_t opt_data_sz[] = {
         [OPT_DATA_INT]    = sizeof(int64_t),
         [OPT_DATA_UINT]   = sizeof(int64_t),
@@ -490,7 +497,9 @@ print_optval:
                         continue;
                 }
 
-                opt_default_val_print(i);
+                if (helptxt_default_value_print)
+                        opt_default_val_print(i);
+
                 pr_raw("\n");
         }
 }
@@ -622,42 +631,44 @@ print_optval:
                                 snprintf_resize(&buf, &buf_pos, &buf_len, "\n");
                         }
                 } else {
-                        do {
-                                uint32_t printable =
-                                        BIT(OPT_DATA_INT) |
-                                        BIT(OPT_DATA_UINT) |
-                                        BIT(OPT_DATA_FLOAT) |
-                                        BIT(OPT_DATA_DOUBLE) |
-                                        BIT(OPT_DATA_STRBUF);
+                        if (helptxt_default_value_print) {
+                                do {
+                                        uint32_t printable =
+                                                BIT(OPT_DATA_INT) |
+                                                BIT(OPT_DATA_UINT) |
+                                                BIT(OPT_DATA_FLOAT) |
+                                                BIT(OPT_DATA_DOUBLE) |
+                                                BIT(OPT_DATA_STRBUF);
 
-                                if (!i->data)
-                                        break;
+                                        if (!i->data)
+                                                break;
 
-                                if (0 == (BIT(i->data_type) & printable))
-                                        break;
+                                        if (0 == (BIT(i->data_type) & printable))
+                                                break;
 
-                                snprintf_resize(&buf, &buf_pos, &buf_len, " ( ");
+                                        snprintf_resize(&buf, &buf_pos, &buf_len, " ( ");
 
-                                switch (i->data_type) {
-                                case OPT_DATA_INT:
-                                        snprintf_resize(&buf, &buf_pos, &buf_len, "%jd", (int64_t){ ({ int64_t x; ptr_signed_word_read(i->data, i->data_sz, &x); x; })});
-                                        break;
-                                case OPT_DATA_UINT:
-                                        snprintf_resize(&buf, &buf_pos, &buf_len, "%ju", (uint64_t){ ({ uint64_t x; ptr_unsigned_word_read(i->data, i->data_sz, &x); x; })});
-                                        break;
-                                case OPT_DATA_FLOAT:
-                                        snprintf_resize(&buf, &buf_pos, &buf_len, "%.4f", *(float *)i->data);
-                                        break;
-                                case OPT_DATA_DOUBLE:
-                                        snprintf_resize(&buf, &buf_pos, &buf_len, "%.4lf", *(double *)i->data);
-                                        break;
-                                case OPT_DATA_STRBUF:
-                                        snprintf_resize(&buf, &buf_pos, &buf_len, "\"%s\"", (char *)i->data);
-                                        break;
-                                }
+                                        switch (i->data_type) {
+                                        case OPT_DATA_INT:
+                                                snprintf_resize(&buf, &buf_pos, &buf_len, "%jd", (int64_t){ ({ int64_t x; ptr_signed_word_read(i->data, i->data_sz, &x); x; })});
+                                                break;
+                                        case OPT_DATA_UINT:
+                                                snprintf_resize(&buf, &buf_pos, &buf_len, "%ju", (uint64_t){ ({ uint64_t x; ptr_unsigned_word_read(i->data, i->data_sz, &x); x; })});
+                                                break;
+                                        case OPT_DATA_FLOAT:
+                                                snprintf_resize(&buf, &buf_pos, &buf_len, "%.4f", *(float *)i->data);
+                                                break;
+                                        case OPT_DATA_DOUBLE:
+                                                snprintf_resize(&buf, &buf_pos, &buf_len, "%.4lf", *(double *)i->data);
+                                                break;
+                                        case OPT_DATA_STRBUF:
+                                                snprintf_resize(&buf, &buf_pos, &buf_len, "\"%s\"", (char *)i->data);
+                                                break;
+                                        }
 
-                                snprintf_resize(&buf, &buf_pos, &buf_len, " )");
-                        } while (0);
+                                        snprintf_resize(&buf, &buf_pos, &buf_len, " )");
+                                } while (0);
+                        }
 
                         snprintf_resize(&buf, &buf_pos, &buf_len, "\n");
                 }
