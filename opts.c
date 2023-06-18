@@ -681,16 +681,6 @@ print_optval:
 }
 #endif
 
-static int is_valid_optarg(int argc, char *argv[], char *optarg)
-{
-        for (int i = 0; i < argc; i++) {
-                if (optarg == argv[i])
-                        return 1;
-        }
-
-        return 0;
-}
-
 int longopts_parse(int argc, char *argv[], void nonopt_cb(char *arg))
 {
         struct option *lopts;
