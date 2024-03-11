@@ -372,6 +372,9 @@ static __always_inline void opt_default_val_print(const opt_desc_t *d)
         if (0 == (BIT(d->data_type) & printable))
                 return;
 
+        if (d->data_type == OPT_DATA_STRBUF && is_strptr_not_set((char *)d->data))
+                return;
+
         pr_color(FG_LT_BLUE, " ( ");
 
         switch (d->data_type) {
