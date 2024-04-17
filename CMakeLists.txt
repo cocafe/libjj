@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.18)
 
 set(LIBJJ_NAME jjcom)
 
@@ -27,8 +27,6 @@ set(COMMON_SRC
     utils.h
     uuid.h
     endian_wrap.h
-    tray.c
-    tray.h
     )
 
 if (MINGW OR WINNT)
@@ -57,9 +55,16 @@ endif()
 if ("${LIBJJ_HAVE_ICONV}" STREQUAL "1")
         target_compile_definitions(${LIBJJ_NAME} PRIVATE -DHAVE_ICONV)
         set(ICONV_SRC iconv.h iconv_wrap.c iconv.c)
-        set(ICONV_LIB iconv)
+        if (WINNT)
+                set(ICONV_LIB iconv)
+        endif()
 else()
         set(ICONV_SRC iconv.h iconv_wrap.c)
+endif()
+
+if ("${LIBJJ_HAVE_TRAY}" STREQUAL "1")
+        target_compile_definitions(${LIBJJ_NAME} PRIVATE -DHAVE_TRAY)
+        set(TRAY_SRC tray.c tray.h)
 endif()
 
 if ("${LIBJJ_HAVE_MATH}" STREQUAL "1")
@@ -110,5 +115,5 @@ elseif(${CMAKE_BUILD_TYPE} STREQUAL "Release")
         target_compile_options(${LIBJJ_NAME} PRIVATE -O2)
 endif()
 
-target_sources(${LIBJJ_NAME} PRIVATE ${JSON_SRC} ${SOCKET_SRC} ${ICONV_SRC} ${MATH_SRC} ${UUID_SRC} ${GETOPT_SRC})
+target_sources(${LIBJJ_NAME} PRIVATE ${JSON_SRC} ${SOCKET_SRC} ${ICONV_SRC} ${MATH_SRC} ${UUID_SRC} ${GETOPT_SRC} ${TRAY_SRC})
 target_link_libraries(${LIBJJ_NAME} pthread ${ICONV_LIB} ${MATH_LIB} ${UUID_LIB} ${SOCKET_LIB})
