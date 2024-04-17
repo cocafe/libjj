@@ -1,6 +1,8 @@
 #ifndef __JJ_ICONV_H__
 #define __JJ_ICONV_H__
 
+#include <wchar.h>
+
 #include "utils.h"
 
 #define ICONV_UTF8              "UTF-8"
