@@ -1524,11 +1524,39 @@ int jbuf_traverse_print_pre(jkey_t *jkey, int has_next, int depth, int argc, va_
         return 0;
 }
 
+static char *backslash_convert(char *str)
+{
+        char *buf = NULL;
+        size_t orig_len = strlen(str);
+        size_t cnt = 0;
+
+        if (NULL == strchr(str, '\\'))
+                return NULL;
+
+        for (size_t i = 0; i < orig_len; i++) {
+                if (str[i] == '\\')
+                        cnt++;
+        }
+
+        buf = calloc(orig_len + cnt + 2, sizeof(char));
+        if (!buf)
+                return NULL;
+
+        for (size_t i = 0, j = 0; i < orig_len; i++, j++) {
+                buf[j] = str[i];
+
+                if (str[i] == '\\')
+                        buf[++j] = '\\';
+        }
+
+        return buf;
+}
+
 int jbuf_traverse_print_post(jkey_t *jkey, int has_next, int depth, int argc, va_list arg)
 {
         static char padding[32] = { [0 ... 31] = '\t' };
         void *ref = NULL;
-        char *str_utf8 = NULL;
+        char *str_utf8 = NULL, *str_converted = NULL;
         char **buf = NULL; size_t *buf_len = 0, *buf_pos = 0;
         int (*printf_wrap)(char **buf, size_t *pos, size_t *len, const char *fmt, ...) = printf_wrapper;
 
@@ -1585,6 +1613,14 @@ int jbuf_traverse_print_post(jkey_t *jkey, int has_next, int depth, int argc, va
                 }
 
                 ref = str_utf8;
+        }
+
+        if (jkey->type == JKEY_TYPE_STRREF ||
+            jkey->type == JKEY_TYPE_STRPTR ||
+            jkey->type == JKEY_TYPE_STRBUF) {
+                str_converted = backslash_convert(ref);
+                if (str_converted)
+                        ref = str_converted;
         }
 
         switch (jkey->type) {
@@ -1673,7 +1709,7 @@ int jbuf_traverse_print_post(jkey_t *jkey, int has_next, int depth, int argc, va
                 break;
 
         case JKEY_TYPE_STRBUF:
-                if (jkey->data.is_wchar)
+                if (jkey->data.is_wchar || str_converted)
                         printf_wrap(buf, buf_pos, buf_len, "\"%s\"", (char *)ref);
                 else
                         printf_wrap(buf, buf_pos, buf_len, "\"%.*s\"", (int)jkey->data.sz, (char *)ref);
@@ -1706,6 +1742,9 @@ int jbuf_traverse_print_post(jkey_t *jkey, int has_next, int depth, int argc, va
                 pr_err("unknown data type: %u\n", jkey->type);
                 break;
         }
+
+        if (str_converted)
+                free(str_converted);
 
         if (str_utf8)
                 free(str_utf8);
