@@ -1774,6 +1774,12 @@ int jbuf_list_array_traverse(jkey_t *arr,
         if (!head)
                 return -ENODATA;
 
+        if (list_empty(head))
+                return 0;
+
+        if (head->next == NULL && head->prev == NULL)
+                return 0;
+
         list_for_each_safe(pos, n, head) {
                 void *container;
 
