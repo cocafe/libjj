@@ -1106,11 +1106,6 @@ static int jkey_list_array_alloc(jkey_t *arr_key, void **container)
                 return -EINVAL;
         }
 
-        if (!arr_key->obj.arr.list.head_inited) {
-                INIT_LIST_HEAD(head);
-                arr_key->obj.arr.list.head_inited = 1;
-        }
-
         if (arr_key->obj.sz == 0) {
                 pr_err("list array [%s] container size is 0\n", arr_key->key);
                 return -EINVAL;
@@ -1318,6 +1313,17 @@ int jkey_cjson_load_recursive(jkey_t *jkey, cJSON *node, int depth)
 
                 if ((err = jkey_array_data_key_check(arr_key, data_key)))
                         return err;
+
+                // always init list array head
+                // since list_empty() needs inited head
+                if (arr_key->type == JKEY_TYPE_LIST_ARRAY) {
+                        struct list_head *head = arr_key->obj.base_ref;
+
+                        if (!arr_key->obj.arr.list.head_inited) {
+                                INIT_LIST_HEAD(head);
+                                arr_key->obj.arr.list.head_inited = 1;
+                        }
+                }
 
                 cJSON_ArrayForEach(child_node, node) {
                         cjson_node_print(child_node, depth + 1, &i);
@@ -1777,9 +1783,6 @@ int jbuf_list_array_traverse(jkey_t *arr,
         if (list_empty(head))
                 return 0;
 
-        if (head->next == NULL && head->prev == NULL)
-                return 0;
-
         list_for_each_safe(pos, n, head) {
                 void *container;
 
@@ -2071,6 +2074,9 @@ int jkey_list_array_free(jkey_t *arr)
 
         if (!head)
                 return -ENODATA;
+
+        if (list_empty(head))
+                return 0;
 
         list_for_each_safe(pos, n, head) {
                 list_del(pos);
