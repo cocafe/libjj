@@ -22,6 +22,9 @@ HWND g_console_hwnd = NULL;
 static uint32_t g_console_is_hide;
 static uint32_t g_console_is_allocated;
 
+lopt_noarg(log_colored, &g_logprint_colored, sizeof(g_logprint_colored), &(uint32_t){ 1 }, "Enable color in logging");
+lopt_noarg(no_log_colored, &g_logprint_colored, sizeof(g_logprint_colored), &(uint32_t){ 0 }, "Disable color in logging");
+
 #ifdef SUBSYS_WINDOW
 lopt_noarg(alloc_console, &g_console_alloc, sizeof(g_console_alloc), &(uint32_t){ 1 }, "Alloc console window");
 lopt_noarg(no_console, &g_console_alloc, sizeof(g_console_alloc), &(uint32_t){ 0 }, "Not to alloc console window");
