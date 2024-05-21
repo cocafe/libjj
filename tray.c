@@ -61,6 +61,9 @@ static LRESULT CALLBACK tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
                                               0,
                                               hwnd,
                                               NULL);
+
+                        tray_update_post(tray);
+
                         SendMessage(hwnd, WM_COMMAND, item, 0);
 
                         goto out;
