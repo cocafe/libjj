@@ -504,6 +504,16 @@ void *jbuf_s64_add(jbuf_t *b, char *key, int64_t *ref)
         return jbuf_key_add(b, JKEY_TYPE_INT, key, ref, sizeof(int64_t));
 }
 
+void *jbuf_float_add(jbuf_t *b, char *key, float *ref)
+{
+        void *cookie = jbuf_key_add(b, JKEY_TYPE_DOUBLE, key, ref, sizeof(double));
+        jkey_t *k = jbuf_key_get(b, cookie);
+
+        k->data.is_float = 1;
+
+        return cookie;
+}
+
 void *jbuf_double_add(jbuf_t *b, char *key, double *ref)
 {
         return jbuf_key_add(b, JKEY_TYPE_DOUBLE, key, ref, sizeof(double));
@@ -703,16 +713,20 @@ static int jkey_float_write(jkey_t *jkey, cJSON *node)
                 return -ENODATA;
         }
 
-#ifdef __ARM_ARCH_7A__
-        if (likely((size_t)dst % sizeof(double))) {
-                *(double *)dst = val;
+        if (jkey->data.is_float) {
+                *(float *)dst = (float)val;
         } else {
-                pr_warn("float point unaligned access detected, fix your struct\n");
-                memcpy(dst, &(double){ val }, sizeof(double));
-        }
+#ifdef __ARM_ARCH_7A__
+                if (likely((size_t)dst % sizeof(double))) {
+                        *(double *)dst = val;
+                } else {
+                        pr_warn("float point unaligned access detected, fix your struct\n");
+                        memcpy(dst, &(double){ val }, sizeof(double));
+                }
 #else
-        *(double *)dst = val;
+                *(double *)dst = val;
 #endif
+        }
 
         return 0;
 }
@@ -1728,7 +1742,10 @@ int jbuf_traverse_print_post(jkey_t *jkey, int has_next, int depth, int argc, va
                 break;
 
         case JKEY_TYPE_DOUBLE:
-                printf_wrap(buf, buf_pos, buf_len, "%.4lf", *(double *)jkey->data.ref);
+                if (jkey->data.is_float)
+                        printf_wrap(buf, buf_pos, buf_len, "%.2f", *(float *)jkey->data.ref);
+                else
+                        printf_wrap(buf, buf_pos, buf_len, "%.4lf", *(double *)jkey->data.ref);
 
                 break;
 

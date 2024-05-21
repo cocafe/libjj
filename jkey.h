@@ -58,6 +58,7 @@ struct json_key {
                 uint8_t         ref_malloc;             // TODO: REMOVE?
                 uint8_t         int_base;
                 uint8_t         is_wchar;
+                uint8_t         is_float;
         } data;
 
         struct {
@@ -136,7 +137,9 @@ void *jbuf_s16_add(jbuf_t *b, char *key, int16_t *ref);
 void *jbuf_s32_add(jbuf_t *b, char *key, int32_t *ref);
 void *jbuf_s64_add(jbuf_t *b, char *key, int64_t *ref);
 
+void *jbuf_float_add(jbuf_t *b, char *key, float *ref);
 void *jbuf_double_add(jbuf_t *b, char *key, double *ref);
+
 void *jbuf_bool_add(jbuf_t *b, char *key, jkey_bool_t *ref);
 
 void *jbuf_strval_add(jbuf_t *b, char *key, uint32_t *ref, const char *map[], size_t map_cnt);
