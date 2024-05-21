@@ -1743,9 +1743,9 @@ int jbuf_traverse_print_post(jkey_t *jkey, int has_next, int depth, int argc, va
 
         case JKEY_TYPE_DOUBLE:
                 if (jkey->data.is_float)
-                        printf_wrap(buf, buf_pos, buf_len, "%.2f", *(float *)jkey->data.ref);
+                        printf_wrap(buf, buf_pos, buf_len, "%.4f", *(float *)jkey->data.ref);
                 else
-                        printf_wrap(buf, buf_pos, buf_len, "%.4lf", *(double *)jkey->data.ref);
+                        printf_wrap(buf, buf_pos, buf_len, "%.6lf", *(double *)jkey->data.ref);
 
                 break;
 
