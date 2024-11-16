@@ -2,6 +2,7 @@
 #define __JJ_UTILS_H__
 
 #include <errno.h>
+#include <time.h>
 
 #include "compiler.h"
 
@@ -46,6 +47,12 @@
 #ifndef min
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #endif
+
+#define millis() (uint64_t)({                                           \
+                        struct timespec _ts;                            \
+                        clock_gettime(CLOCK_MONOTONIC, &_ts);           \
+                        _ts.tv_sec * 1000 + _ts.tv_nsec / (1000 * 1000); \
+                        })
 
 static inline int ptr_word_write(void *data, size_t word_sz, int64_t val)
 {
