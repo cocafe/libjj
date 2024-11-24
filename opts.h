@@ -1,6 +1,7 @@
 #ifndef __JJ_OPTS_H__
 #define __JJ_OPTS_H__
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "compiler.h"
