@@ -336,7 +336,7 @@ static int opt_desc_handle(const opt_desc_t *d, char *arg)
 static __always_inline void optval_help_print(const opt_desc_t *d, size_t param_len)
 {
         size_t i = 0;
-        uint64_t x;
+        uint64_t x = 0;
 
         if (d->data) {
                 ptr_unsigned_word_read(d->data, d->data_sz, &x);
