@@ -29,6 +29,7 @@ set(COMMON_SRC
     endian_wrap.h
     sync.c
     sync.h
+    hex.h
     )
 
 if (MINGW OR WINNT)
