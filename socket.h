@@ -1,5 +1,5 @@
-
-
+#include <arpa/inet.h>
+#include <netdb.h>
 
 #define IPV6_STRLEN_MAX         (4 * 8 + 7 + 1 + 4)
 #define IPV4_STRLEN_MAX         (3 * 4 + 3 + 1 + 4)
