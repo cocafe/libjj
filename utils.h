@@ -159,4 +159,14 @@ static inline int ptr_signed_word_read(void *data, size_t word_sz, int64_t *val)
         return 0;
 }
 
+static inline struct timespec ms_to_timespec(uint32_t ms)
+{
+        struct timespec ts;
+
+        ts.tv_sec = ms / 1000;
+        ts.tv_nsec = (ms % 1000) * 1000000;
+
+        return ts;
+}
+
 #endif //__JJ_UTILS_H__
