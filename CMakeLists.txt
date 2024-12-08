@@ -27,6 +27,8 @@ set(COMMON_SRC
     utils.h
     uuid.h
     endian_wrap.h
+    sync.c
+    sync.h
     )
 
 if (MINGW OR WINNT)
