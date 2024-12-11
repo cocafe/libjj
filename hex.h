@@ -31,14 +31,12 @@ static int hex2u8(char c, uint8_t *v) {
         return 0;
 }
 
-static ssize_t hex2u8s(const char *hex, uint8_t *out, size_t outsize) {
-        size_t hex_length = strlen(hex);
-
-        if (hex_length % 2 != 0)
+static ssize_t hex2u8s(const char *hex, size_t hex_len, uint8_t *out, size_t out_byte) {
+        if (hex_len % 2 != 0)
                 return -EINVAL;
 
-        size_t byte_count = hex_length / 2;
-        if (byte_count > outsize)
+        size_t byte_count = hex_len / 2;
+        if (byte_count > out_byte)
                 return -ENOSPC;
 
         for (size_t i = 0; i < byte_count; i++) {
