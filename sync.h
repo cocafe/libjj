@@ -3,6 +3,6 @@
 
 #include <semaphore.h>
 
-int sem_safe_wait(sem_t *sem, int timedout_sec);
+int sem_safe_wait(sem_t *sem, uint32_t timeout_ms);
 
 #endif // __LIBJJ_SYNC_H__

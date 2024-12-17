@@ -2,7 +2,7 @@
 #include <semaphore.h>
 #include "logging.h"
 
-int sem_safe_wait(sem_t *sem, int timedout_sec)
+int sem_safe_wait(sem_t *sem, uint32_t timeout_ms)
 {
         struct timespec ts = { };
         int err;
@@ -12,7 +12,13 @@ int sem_safe_wait(sem_t *sem, int timedout_sec)
                 return -EINVAL;
         }
 
-        ts.tv_sec += timedout_sec;
+        ts.tv_sec += timeout_ms / 1000;
+        ts.tv_nsec += (timeout_ms % 1000) * 1000000;
+
+        if (ts.tv_nsec >= 1000000000) {
+                ts.tv_sec += ts.tv_nsec / 1000000000;
+                ts.tv_nsec %= 1000000000;
+        }
 
         while ((err = sem_timedwait(sem, &ts)) == -1 && errno == EINTR)
                 continue;
