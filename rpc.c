@@ -74,8 +74,7 @@ void http_simple_reason_send(struct evhttp_request *req, int code, char const *t
 
 void rpc_run(struct rpc_ctx *ctx)
 {
-        while (!event_base_got_break(ctx->ev_base))
-                event_base_dispatch(ctx->ev_base);
+        event_base_dispatch(ctx->ev_base);
 }
 
 void rpc_stop(struct rpc_ctx *ctx)
