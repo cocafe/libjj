@@ -19,6 +19,11 @@
 #define WCBUF_LEN               ARRAY_SIZE
 #define WCSLEN_BYTE(s)          (wcslen(s) * sizeof(wchar_t))
 
+enum {
+        MATCH_CASE = 0,
+        CASELESS = 1,
+};
+
 int bin_snprintf(char *str, size_t slen, uint64_t val, size_t vsize);
 int vprintf_resize(char **buf, size_t *pos, size_t *len, const char *fmt, va_list arg);
 int snprintf_resize(char **buf, size_t *pos, size_t *len, const char *fmt, ...);
