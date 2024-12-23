@@ -61,10 +61,10 @@ void http_simple_reason_send(struct evhttp_request *req, int code, char const *t
         char const *code_str = http_errcode_get(code);
         struct evbuffer *body = evbuffer_new();
 
-        evbuffer_add_printf(body, "<h1>%d: %s</h1>", code, code_str);
+        evbuffer_add_printf(body, "<h1>%d: %s</h1>\n", code, code_str);
 
         if (text) {
-                evbuffer_add_printf(body, "%s", text);
+                evbuffer_add_printf(body, "<h1>%s</h1>\n", text);
         }
 
         evhttp_send_reply(req, code, code_str, body);
