@@ -65,7 +65,7 @@ if ("${LIBJJ_HAVE_RPC}" STREQUAL "1")
         endif()
 
         set(RPC_SRC rpc.c rpc.h)
-        set(RPC_LIB ${LIBEVENT_PTHREADS_LIBRARIES})
+        set(RPC_LIB ${LIBEVENT_PTHREADS_LIBRARIES} pthread)
 endif()
 
 if ("${LIBJJ_HAVE_ICONV}" STREQUAL "1")
@@ -101,8 +101,6 @@ if ("${LIBJJ_HAVE_CJSON}" STREQUAL "1")
         target_compile_definitions(${LIBJJ_NAME} PRIVATE -DHAVE_CJSON)
         set(JSON_SRC cJSON.c cJSON.h jkey.c jkey.h json.c json.h)
 endif()
-
-
 
 if ("${LIBJJ_WIN32_WINDOW}" STREQUAL "1")
         target_compile_definitions(${LIBJJ_NAME} PRIVATE -DSUBSYS_WINDOW)
