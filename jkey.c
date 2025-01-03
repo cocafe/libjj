@@ -827,8 +827,18 @@ static int jkey_string_write(jkey_t *jkey, cJSON *node)
                                 }
                         }
                 } else {
+                        size_t len = json_len;
+
+                        if (jkey->type == JKEY_TYPE_STRBUF) {
+                                if (jkey->data.sz < json_len) {
+                                        pr_warn("jkey [%s] cannot hold json string\n", jkey->key);
+                                        len = jkey->data.sz - 1;
+                                }
+                        }
+
                         // jkey->data.sz is allocated above, always > json_len
-                        strncpy(dst, json_str, json_len);
+                        strncpy(dst, json_str, len);
+                        ((char *)dst)[len] = '\0';
                 }
 
                 break;
