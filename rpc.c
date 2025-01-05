@@ -88,7 +88,9 @@ int rpc_init(struct rpc_ctx *ctx,
 {
         int err = -EINVAL;
 
+#ifdef HAVE_RPC_PTHREADS
         evthread_use_pthreads();
+#endif
 
         ctx->ev_base = event_base_new();
         if (!ctx->ev_base)
