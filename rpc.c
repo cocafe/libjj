@@ -61,6 +61,11 @@ void http_simple_reason_send(struct evhttp_request *req, int code, char const *t
         char const *code_str = http_errcode_get(code);
         struct evbuffer *body = evbuffer_new();
 
+        evhttp_remove_header(req->output_headers, "Content-Type");
+        evhttp_add_header(req->output_headers,
+                          "Content-Type",
+                          "text/html; charset=UTF-8");
+
         evbuffer_add_printf(body, "<h1>%d: %s</h1>\n", code, code_str);
 
         if (text) {
