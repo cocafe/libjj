@@ -168,7 +168,11 @@
 typedef uint8_t __attribute__((__may_alias__))  __u8;
 typedef uint16_t __attribute__((__may_alias__)) __u16;
 typedef uint32_t __attribute__((__may_alias__)) __u32;
+#ifdef __linux__
+#include <linux/types.h>
+#else
 typedef uint64_t __attribute__((__may_alias__)) __u64;
+#endif
 
 typedef uint8_t __attribute__((__may_alias__))  __u8_alias_t;
 typedef uint16_t __attribute__((__may_alias__)) __u16_alias_t;
