@@ -7,7 +7,9 @@
 #ifndef BITS_PER_LONG
 #define BITS_PER_LONG           (__LONG_WIDTH__)
 #endif
+#ifndef __clang__
 #define BITS_PER_LONG_LONG      (__LONG_LONG_WIDTH__)
+#endif
 #endif /* __GNUC__ */
 
 #ifdef __clang__
