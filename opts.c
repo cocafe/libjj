@@ -293,8 +293,8 @@ static int opt_optstr_handle(const opt_desc_t *d, char *arg)
 
 static int opt_needarg_handle(const opt_desc_t *d, char *arg)
 {
-        if (!d->data)
-                return -EINVAL;
+        if (!d->data && !d->cb)
+                return -ENODATA;
 
         switch (d->data_type) {
         case OPT_DATA_UINT:
@@ -313,17 +313,25 @@ static int opt_needarg_handle(const opt_desc_t *d, char *arg)
         case OPT_DATA_STRPTR:
                 return opt_strptr_handle(d, arg);
 
-        case OPT_DATA_GENERIC:
         default:
                 return -EINVAL;
+
+        case OPT_DATA_GENERIC:
+                if (d->cb)
+                        return d->cb(arg);
         }
+
+        return -EINVAL;
 }
 
 static int opt_desc_handle(const opt_desc_t *d, char *arg)
 {
         switch (d->has_arg) {
         case no_argument:
-                return opt_noarg_handle(d);
+                if (d->data_type == OPT_DATA_GENERIC && d->cb)
+                        return d->cb(arg);
+                else
+                        return opt_noarg_handle(d);
 
         case required_argument:
                 return opt_needarg_handle(d, arg);

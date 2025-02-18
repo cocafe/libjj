@@ -14,6 +14,7 @@
 
 typedef struct opt_val opt_val_t;
 typedef struct opt_desc opt_desc_t;
+typedef int (*opt_cb_t)(char *);
 
 enum opt_data_type {
         OPT_DATA_INT = 0,
@@ -43,25 +44,27 @@ struct opt_desc {
         void                   *to_set;
         const opt_val_t        *optvals;
         const char             *help;       // use '\n' to make multiple lines
+        opt_cb_t                cb;
 };
 
-#define __opt_entry(_sopt, _lopt, _has_arg, _ref, _ref_sz, _ref_type, _int_base, _set, _optval, _help) \
-{                                                                                                        \
-        .short_opt      = #_sopt,                                                                        \
-        .long_opt       = #_lopt,                                                                        \
-        .has_arg        = _has_arg,                                                                      \
-        .data           = _ref,                                                                          \
-        .data_sz        = _ref_sz,                                                                       \
-        .data_type      = _ref_type,                                                                     \
-        .int_base       = _int_base,                                                                     \
-        .to_set         = _set,                                                                          \
-        .optvals        = _optval,                                                                       \
-        .help           = _help,                                                                         \
+#define __opt_entry(_sopt, _lopt, _has_arg, _ref, _ref_sz, _ref_type, _int_base, _set, _optval, _help, _cb) \
+{                                                                                                           \
+        .short_opt      = #_sopt,                                                                           \
+        .long_opt       = #_lopt,                                                                           \
+        .has_arg        = _has_arg,                                                                         \
+        .data           = _ref,                                                                             \
+        .data_sz        = _ref_sz,                                                                          \
+        .data_type      = _ref_type,                                                                        \
+        .int_base       = _int_base,                                                                        \
+        .to_set         = _set,                                                                             \
+        .optvals        = _optval,                                                                          \
+        .help           = _help,                                                                            \
+        .cb             = _cb,                                                                              \
 }
 
 #define ___sopt_entry(sopt, need_arg, ref, ref_sz, ref_type, int_base, set, optval, help)       \
 const opt_desc_t opt_##sopt __ALIGNED(sizeof(void *)) __SECTION("section_opt_desc") =           \
-        __opt_entry(sopt, \0, need_arg, ref, ref_sz, ref_type, int_base, set, optval, help)
+        __opt_entry(sopt, \0, need_arg, ref, ref_sz, ref_type, int_base, set, optval, help, NULL)
 
 #define __sopt_hex_entry(sopt, need_arg, ref, ref_sz, ref_type, set, optval, help) \
                 ___sopt_entry(sopt, need_arg, ref, ref_sz, ref_type, 16, set, optval, help)
@@ -98,15 +101,15 @@ const opt_desc_t opt_##sopt __ALIGNED(sizeof(void *)) __SECTION("section_opt_des
                 __sopt_entry(sopt, no_argument, ref, ref_sz, OPT_DATA_GENERIC, set, NULL, help)
 
 
-#define ___lsopt_entry(sopt, lopt, need_arg, ref, ref_sz, ref_type, int_base, set, optval, help)        \
-const opt_desc_t opt_##lopt __ALIGNED(sizeof(void *)) __SECTION("section_opt_desc") =                   \
-        __opt_entry(sopt, lopt, need_arg, ref, ref_sz, ref_type, int_base, set, optval, help)
+#define ___lsopt_entry(sopt, lopt, need_arg, ref, ref_sz, ref_type, int_base, set, optval, help, _cb)           \
+const opt_desc_t opt_##lopt __ALIGNED(sizeof(void *)) __SECTION("section_opt_desc") =                           \
+        __opt_entry(sopt, lopt, need_arg, ref, ref_sz, ref_type, int_base, set, optval, help, _cb)
 
 #define __lsopt_hex_entry(sopt, lopt, need_arg, ref, ref_sz, ref_type, set, optval, help) \
-                ___lsopt_entry(sopt, lopt, need_arg, ref, ref_sz, ref_type, 16, set, optval, help)
+                ___lsopt_entry(sopt, lopt, need_arg, ref, ref_sz, ref_type, 16, set, optval, help, NULL)
 
 #define __lsopt_entry(sopt, lopt, need_arg, ref, ref_sz, ref_type, set, optval, help) \
-                ___lsopt_entry(sopt, lopt, need_arg, ref, ref_sz, ref_type, 0, set, optval, help)
+                ___lsopt_entry(sopt, lopt, need_arg, ref, ref_sz, ref_type, 0, set, optval, help, NULL)
 
 #define lsopt_int(sopt, lopt, ref, ref_sz, help) \
                 __lsopt_entry(sopt, lopt, required_argument, ref, ref_sz, OPT_DATA_INT, NULL, NULL, help)
@@ -178,6 +181,12 @@ const opt_desc_t opt_##lopt __ALIGNED(sizeof(void *)) __SECTION("section_opt_des
 
 #define lopt_optval_simple(var, opts, help) \
                 lopt_optval(var, &(var), sizeof(var), opts, help)
+
+#define lopt_cb(name, help, cb) \
+                ___lsopt_entry(\0, name, required_argument, NULL, 0, OPT_DATA_GENERIC, 0, 0, NULL, help, cb)
+
+#define lopt_cb_noarg(name, help, cb) \
+                ___lsopt_entry(\0, name, no_argument, NULL, 0, OPT_DATA_GENERIC, 0, 0, NULL, help, cb)
 
 void opts_helptxt_defval_print(int enabled);
 int longopts_parse(int argc, char *argv[], void nonopt_cb(char *arg));
