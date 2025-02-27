@@ -14,6 +14,54 @@
 uint32_t g_logprint_level = LOG_LEVEL_DEFAULT;
 uint32_t g_logprint_colored = 1;
 
+static int opt_verbose_logging(char *optarg)
+{
+        UNUSED_PARAM(optarg);
+
+        g_logprint_level |= LOG_LEVEL_VERBOSE;
+
+        return 0;
+}
+
+lopt_cb_noarg(log_verbose, "enable verbose logging", opt_verbose_logging);
+
+static int opt_debug_logging(char *optarg)
+{
+        UNUSED_PARAM(optarg);
+
+        g_logprint_level |= LOG_LEVEL_DEBUG;
+
+        return 0;
+}
+
+lopt_cb_noarg(log_debug, "enable debug logging", opt_debug_logging);
+
+static int opt_nodebug_logging(char *optarg)
+{
+        UNUSED_PARAM(optarg);
+
+        unsigned long mask = ~LOG_LEVEL_DEBUG;
+        g_logprint_level &= mask;
+
+        return 0;
+}
+
+lopt_cb_noarg(log_nodebug, "disable debug logging", opt_nodebug_logging);
+
+static int opt_all_logging(char *optarg)
+{
+        UNUSED_PARAM(optarg);
+
+        g_logprint_level = LOG_LEVEL_ALL;
+
+        return 0;
+}
+
+lopt_cb_noarg(log_all, "enable all logging levels", opt_all_logging);
+
+lopt_noarg(log_colored, &g_logprint_colored, sizeof(g_logprint_colored), &(uint32_t){ 1 }, "Enable color in logging");
+lopt_noarg(no_log_colored, &g_logprint_colored, sizeof(g_logprint_colored), &(uint32_t){ 0 }, "Disable color in logging");
+
 #ifdef __WINNT__
 
 uint32_t g_console_alloc = 0;
@@ -21,9 +69,6 @@ uint32_t g_console_show = 1;
 HWND g_console_hwnd = NULL;
 static uint32_t g_console_is_hide;
 static uint32_t g_console_is_allocated;
-
-lopt_noarg(log_colored, &g_logprint_colored, sizeof(g_logprint_colored), &(uint32_t){ 1 }, "Enable color in logging");
-lopt_noarg(no_log_colored, &g_logprint_colored, sizeof(g_logprint_colored), &(uint32_t){ 0 }, "Disable color in logging");
 
 #ifdef SUBSYS_WINDOW
 lopt_noarg(alloc_console, &g_console_alloc, sizeof(g_console_alloc), &(uint32_t){ 1 }, "Alloc console window");
