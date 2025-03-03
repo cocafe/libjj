@@ -40,6 +40,10 @@
 	(type *)((char *)__mptr - offsetof(type, member)); })
 #endif
 
+#ifndef sizeof_member
+#define sizeof_member(type, member) sizeof(((type *)(0))->member)
+#endif
+
 #ifndef __compiletime_error
 # define __compiletime_error(message)
 #endif
