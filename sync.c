@@ -33,3 +33,21 @@ int sem_safe_wait(sem_t *sem, uint32_t timeout_ms)
 
         return 0;
 }
+
+int sem_safe_wait_flag(sem_t *sem, uint32_t timeout_ms, unsigned *flag)
+{
+        int err;
+
+        *flag = 1;
+        err = sem_safe_wait(sem, timeout_ms);
+        *flag = 0;
+
+        return err;
+}
+
+void sem_post_flag(sem_t *sem, unsigned *flag)
+{
+        if (*flag) {
+                sem_post(sem);
+        }
+}
