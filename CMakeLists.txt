@@ -113,7 +113,7 @@ endif()
 
 if ("${LIBJJ_HAVE_CJSON}" STREQUAL "1")
         target_compile_definitions(${LIBJJ_NAME} PRIVATE -DHAVE_CJSON)
-        set(JSON_SRC cJSON.c cJSON.h jkey.c jkey.h json.c json.h)
+        set(JSON_SRC cJSON.c cJSON.h cJSON_Utils.c cJSON_Utils.h jkey.c jkey.h json.c json.h)
 endif()
 
 if ("${LIBJJ_WIN32_WINDOW}" STREQUAL "1")

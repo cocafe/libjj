@@ -81,20 +81,20 @@ then using the CJSON_API_VISIBILITY flag to "export" the same symbols the way CJ
 /* project version */
 #define CJSON_VERSION_MAJOR 1
 #define CJSON_VERSION_MINOR 7
-#define CJSON_VERSION_PATCH 13
+#define CJSON_VERSION_PATCH 18
 
 #include <stddef.h>
 
 /* cJSON Types: */
-#define cJSON_Invalid (0U)
-#define cJSON_False  (1U << 0U)
-#define cJSON_True   (1U << 1U)
-#define cJSON_NULL   (1U << 2U)
-#define cJSON_Number (1U << 3U)
-#define cJSON_String (1U << 4U)
-#define cJSON_Array  (1U << 5U)
-#define cJSON_Object (1U << 6U)
-#define cJSON_Raw    (1U << 7U) /* raw json */
+#define cJSON_Invalid (0)
+#define cJSON_False  (1 << 0)
+#define cJSON_True   (1 << 1)
+#define cJSON_NULL   (1 << 2)
+#define cJSON_Number (1 << 3)
+#define cJSON_String (1 << 4)
+#define cJSON_Array  (1 << 5)
+#define cJSON_Object (1 << 6)
+#define cJSON_Raw    (1 << 7) /* raw json */
 
 #define cJSON_IsReference 256
 #define cJSON_StringIsConst 512
@@ -256,7 +256,7 @@ CJSON_PUBLIC(cJSON_bool) cJSON_Compare(const cJSON * const a, const cJSON * cons
 
 /* Minify a strings, remove blank characters(such as ' ', '\t', '\r', '\n') from strings.
  * The input pointer json cannot point to a read-only address area, such as a string constant, 
- * but should point to a readable and writable adress area. */
+ * but should point to a readable and writable address area. */
 CJSON_PUBLIC(void) cJSON_Minify(char *json);
 
 /* Helper functions for creating and adding items to an object at the same time.
@@ -278,6 +278,13 @@ CJSON_PUBLIC(double) cJSON_SetNumberHelper(cJSON *object, double number);
 #define cJSON_SetNumberValue(object, number) ((object != NULL) ? cJSON_SetNumberHelper(object, (double)number) : (number))
 /* Change the valuestring of a cJSON_String object, only takes effect when type of object is cJSON_String */
 CJSON_PUBLIC(char*) cJSON_SetValuestring(cJSON *object, const char *valuestring);
+
+/* If the object is not a boolean type this does nothing and returns cJSON_Invalid else it returns the new type*/
+#define cJSON_SetBoolValue(object, boolValue) ( \
+    (object != NULL && ((object)->type & (cJSON_False|cJSON_True))) ? \
+    (object)->type=((object)->type &(~(cJSON_False|cJSON_True)))|((boolValue)?cJSON_True:cJSON_False) : \
+    cJSON_Invalid\
+)
 
 /* Macro for iterating over an array or object */
 #define cJSON_ArrayForEach(element, array) for(element = (array != NULL) ? (array)->child : NULL; element != NULL; element = element->next)
