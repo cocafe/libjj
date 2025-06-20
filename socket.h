@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/tcp.h>
@@ -18,9 +19,10 @@ static int is_valid_ipaddr(char *ipstr, int ipver)
 
 static int socket_tcp_nodelay_set(int sockfd) {
         int flag = 1;
+
         if (setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(flag)) < 0) {
-                perror("setsockopt TCP_NODELAY failed");
-                return -1;
+                return -EFAULT;
         }
+
         return 0;
 }
